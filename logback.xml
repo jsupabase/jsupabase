@@ -1,0 +1,20 @@
+<configuration>
+    <!-- Console appender para mostrar los logs en la consola -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Formato simple: Fecha Nivel [Hilo] Logger - Mensaje -->
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--
+        Nivel del Logger para nuestro código.
+        Necesitamos DEBUG para ver los logs de Postgrest (que usan LOG.debug)
+    -->
+    <logger name="io.github.jsupabase" level="DEBUG" />
+
+    <!-- Logger raíz por defecto -->
+    <root level="warn">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
