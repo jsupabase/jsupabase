@@ -1,4 +1,4 @@
-package io.github.jsupabase.auth.events;
+package io.github.jsupabase.auth.enums;
 
 /**
  * Defines the different types of authentication state changes.

@@ -1,7 +1,7 @@
 package io.github.jsupabase.auth.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Map;
 
 /**
@@ -12,7 +12,7 @@ import java.util.Map;
  * @author neilhdezs
  * @version 0.1.0
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+
 public class OtpOptions {
 
     /** - The redirect URL embedded in the email link - **/
@@ -31,7 +31,7 @@ public class OtpOptions {
     @JsonProperty("captchaToken")
     private String captchaToken;
 
-    /** - Messaging channel to use (e.g., "sms" or "whatsapp") - **/
+    /** - Messaging channel to use (e.g., "sms" or "whatsapp") - **/ // TODO: VER LOS CANALES Y METERLOS EN ENUMERADOS
     @JsonProperty("channel")
     private String channel;
 

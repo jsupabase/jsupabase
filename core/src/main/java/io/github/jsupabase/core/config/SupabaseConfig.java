@@ -10,7 +10,7 @@ import java.util.Objects;
  * Instantiated using the Builder pattern.
  *
  * @author neilhdezs
- * @version 0.0.3
+ * @version 0.0.4
  */
 public final class SupabaseConfig {
 
@@ -26,15 +26,30 @@ public final class SupabaseConfig {
     /** - Supabase schema to interact with - **/
     private final String schema;
 
+    // --- Service Paths (Added in 0.0.4) ---
+    /** - Path prefix for the Auth service (e.g., /auth/v1) - **/
+    private final String authPath;
+    /** - Path prefix for the Postgrest service (e.g., /rest/v1) - **/
+    private final String postgrestPath;
+    /** - Path prefix for the Storage service (e.g., /storage/v1) - **/
+    private final String storagePath;
+    /** - Path prefix for the Realtime service (e.g., /realtime/v1) - **/
+    private final String realtimePath;
+
 
     /**
      * Private constructor to force the use of the Builder pattern.
      */
-    private SupabaseConfig(URI supabaseUrl, String supabaseKey, Map<String, String> headers, String schema) {
+    private SupabaseConfig(URI supabaseUrl, String supabaseKey, Map<String, String> headers, String schema,
+                           String authPath, String postgrestPath, String storagePath, String realtimePath) {
         this.supabaseUrl = supabaseUrl;
         this.supabaseKey = supabaseKey;
         this.headers = headers;
         this.schema = schema;
+        this.authPath = authPath;
+        this.postgrestPath = postgrestPath;
+        this.storagePath = storagePath;
+        this.realtimePath = realtimePath;
     }
 
     /**
@@ -69,6 +84,40 @@ public final class SupabaseConfig {
         return schema;
     }
 
+    // --- New Getters (Added in 0.0.4) ---
+
+    /**
+     * Getter for the Auth service path.
+     * @return Auth service path (e.g., /auth/v1)
+     */
+    public String getAuthPath() {
+        return authPath;
+    }
+
+    /**
+     * Getter for the Postgrest service path.
+     * @return Postgrest service path (e.g., /rest/v1)
+     */
+    public String getPostgrestPath() {
+        return postgrestPath;
+    }
+
+    /**
+     * Getter for the Storage service path.
+     * @return Storage service path (e.g., /storage/v1)
+     */
+    public String getStoragePath() {
+        return storagePath;
+    }
+
+    /**
+     * Getter for the Realtime service path.
+     * @return Realtime service path (e.g., /realtime/v1)
+     */
+    public String getRealtimePath() {
+        return realtimePath;
+    }
+
 
     /**
      * Resuelve un path relativo contra la URL base de Supabase.
@@ -99,6 +148,12 @@ public final class SupabaseConfig {
 
         /** - Supabase schema to interact with - **/
         private String schema = "public"; // Default Supabase schema
+
+        // --- Service Path Defaults (Added in 0.0.4) ---
+        private String authPath = "/auth/v1";
+        private String postgrestPath = "/rest/v1";
+        private String storagePath = "/storage/v1";
+        private String realtimePath = "/realtime/v1";
 
         /**
          * Creates a new Builder.
@@ -139,6 +194,48 @@ public final class SupabaseConfig {
             return this;
         }
 
+        // --- Optional Path Overrides (Added in 0.0.4) ---
+
+        /**
+         * (Optional) Overrides the default Auth service path.
+         * @param authPath The new path (e.g., "/auth/v2")
+         * @return this (for Builder chaining)
+         */
+        public Builder withAuthPath(String authPath) {
+            this.authPath = authPath;
+            return this;
+        }
+
+        /**
+         * (Optional) Overrides the default Postgrest service path.
+         * @param postgrestPath The new path (e.g., "/rest/v2")
+         * @return this (for Builder chaining)
+         */
+        public Builder withPostgrestPath(String postgrestPath) {
+            this.postgrestPath = postgrestPath;
+            return this;
+        }
+
+        /**
+         * (Optional) Overrides the default Storage service path.
+         * @param storagePath The new path (e.g., "/storage/v2")
+         * @return this (for Builder chaining)
+         */
+        public Builder withStoragePath(String storagePath) {
+            this.storagePath = storagePath;
+            return this;
+        }
+
+        /**
+         * (Optional) Overrides the default Realtime service path.
+         * @param realtimePath The new path (e.g., "/realtime/v2")
+         * @return this (for Builder chaining)
+         */
+        public Builder withRealtimePath(String realtimePath) {
+            this.realtimePath = realtimePath;
+            return this;
+        }
+
         /**
          * Builds the final SupabaseConfig instance.
          * @return An immutable SupabaseConfig instance.
@@ -147,7 +244,8 @@ public final class SupabaseConfig {
             if (!this.headers.containsKey("Authorization")) {
                 this.headers.put("Authorization", "Bearer " + this.supabaseKey);
             }
-            return new SupabaseConfig(this.supabaseUrl, this.supabaseKey, this.headers, this.schema);
+            return new SupabaseConfig(this.supabaseUrl, this.supabaseKey, this.headers, this.schema,
+                    this.authPath, this.postgrestPath, this.storagePath, this.realtimePath);
         }
     }
 }

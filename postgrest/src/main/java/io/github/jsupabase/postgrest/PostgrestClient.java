@@ -2,58 +2,61 @@ package io.github.jsupabase.postgrest;
 
 import io.github.jsupabase.core.client.HttpClientBase;
 import io.github.jsupabase.core.config.SupabaseConfig;
-// 1. IMPORTAR LOS BUILDERS CORRECTOS
-import io.github.jsupabase.postgrest.builder.PostgrestSelectBuilder; // <--- ¡Este es el correcto!
-import io.github.jsupabase.postgrest.PostgrestRpcBuilder;
+import io.github.jsupabase.postgrest.clients.PostgrestRpcClient;
+import io.github.jsupabase.postgrest.clients.PostgrestTableClient;
 
 import java.util.Objects;
 
 /**
- * El punto de entrada para todas las interacciones con la base de datos (PostgREST API).
- * Este cliente ahora implementa HttpClientBase y actúa como el motor de red.
+ * Main entry point for the Supabase PostgREST API.
+ * <p>
+ * This class acts as a <strong>Gateway</strong> (or Factory) that provides access
+ * to specialized clients for Table and RPC operations.
+ * <p>
+ * It <strong>extends HttpClientBase</strong> to inherit and manage the authentication
+ * state (JWT) from the main SupabaseClient, passing it down to all
+ * specialized sub-clients.
  *
  * @author neilhdezs
- * @version 0.0.4 // Versión actualizada
+ * @version 1.0.0 (Refactored to Gateway pattern)
  */
 public class PostgrestClient extends HttpClientBase {
 
+    /** - Client for RPC operations (GET/POST /rpc/{function}) - **/
+    private final PostgrestRpcClient rpcClient;
+
     /**
-     * Crea un nuevo PostgrestClient.
+     * Creates a new PostgrestClient (Gateway).
      *
-     * @param config La configuración del cliente.
+     * @param config The client configuration.
      */
     public PostgrestClient(SupabaseConfig config) {
-        super(Objects.requireNonNull(config, "SupabaseConfig cannot be null"));
+        super(config);
+
+        this.rpcClient = new PostgrestRpcClient(config);
     }
 
     /**
-     * Selecciona una tabla para empezar a construir una consulta (SELECT * por defecto).
+     * Provides access to the client for <strong>Table</strong> operations.
+     * <p>
+     * This is a factory method that creates a new client instance
+     * bound to the specified {@code table}.
      *
-     * @param table El nombre de la tabla o vista.
-     * @return Una instancia de PostgrestSelectBuilder.
+     * @param table The name of the database table to interact with (e.g., "profiles").
+     * @return A new {@link PostgrestTableClient} instance bound to that table.
      */
-    public PostgrestQueryBuilder from(String table) {
-        return new PostgrestQueryBuilder(this, table);
+    public PostgrestTableClient table(String table) {
+        return new PostgrestTableClient(this.config, table);
     }
 
     /**
-     * Llama a una función de PostgreSQL vía Remote Procedure Call (RPC).
+     * Provides access to the client for <strong>RPC (Remote Procedure Call)</strong> operations.
+     * <p>
+     * Corresponds to the {@code /rpc} endpoint group.
      *
-     * @param functionName El nombre de la función a llamar.
-     * @param args Los argumentos (parámetros) para la función (POJO o Map).
-     * @return Una instancia de PostgrestRpcBuilder.
+     * @return The singleton PostgrestRpcClient instance.
      */
-    public PostgrestRpcBuilder rpc(String functionName, Object args) {
-        return new PostgrestRpcBuilder(this, functionName, args);
-    }
-
-    /**
-     * Llama a una función de PostgreSQL vía RPC sin argumentos.
-     *
-     * @param functionName El nombre de la función a llamar.
-     * @return Una instancia de PostgrestRpcBuilder.
-     */
-    public PostgrestRpcBuilder rpc(String functionName) {
-        return new PostgrestRpcBuilder(this, functionName, null);
+    public PostgrestRpcClient rpc() {
+        return this.rpcClient;
     }
 }

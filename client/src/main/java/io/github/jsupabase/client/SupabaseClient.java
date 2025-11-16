@@ -2,14 +2,16 @@ package io.github.jsupabase.client;
 
 import io.github.jsupabase.auth.AuthClient;
 import io.github.jsupabase.auth.dto.Session;
-import io.github.jsupabase.auth.events.AuthChangeEvent;
+import io.github.jsupabase.auth.enums.AuthChangeEvent;
+import io.github.jsupabase.core.client.HttpClientBase;
 import io.github.jsupabase.core.config.SupabaseConfig;
 import io.github.jsupabase.postgrest.PostgrestClient;
-import io.github.jsupabase.postgrest.PostgrestQueryBuilder;
-import io.github.jsupabase.postgrest.builder.PostgrestSelectBuilder; // Importa el builder
+import io.github.jsupabase.realtime.RealtimeClient;
+import io.github.jsupabase.storage.StorageClient;
 
+import java.net.http.HttpClient;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference; // Para un estado thread-safe
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Main entry point for the jsupabase SDK.
@@ -17,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference; // Para un estado thread-saf
  * It manages the authentication state and injects the JWT into other clients.
  *
  * @author neilhdezs
- * @version 0.1.0 // Versión inicial del cliente principal
+ * @version 0.4.0
  */
 public class SupabaseClient {
 
@@ -35,10 +37,13 @@ public class SupabaseClient {
     private final AtomicReference<PostgrestClient> postgrest;
 
     /** - Specialized client for Realtime (WebSockets) - **/
-    // private final RealtimeClient realtime;
+    private final RealtimeClient realtime;
 
-    /** - Specialized client for Storage (Files) - **/
-    // private final StorageClient storage;
+    /**
+     * - Specialized client for Storage (Files).
+     * - This is also stored in an AtomicReference and replaced on auth change.
+     */
+    private final AtomicReference<StorageClient> storage;
 
     /**
      * Private constructor. Use the static create() method.
@@ -48,51 +53,49 @@ public class SupabaseClient {
     private SupabaseClient(SupabaseConfig config) {
         this.config = Objects.requireNonNull(config, "SupabaseConfig cannot be null");
 
-        // --- Initialize specialized clients ---
+        HttpClient sharedHttpClient = HttpClientBase.getSharedHttpClient();
 
-        // 1. AuthClient se crea con la config anónima
         this.auth = new AuthClient(this.config);
-
-        // 2. PostgrestClient se inicializa anónimo, pero en un AtomicReference
         this.postgrest = new AtomicReference<>(new PostgrestClient(this.config));
+        this.realtime = new RealtimeClient(this.config, sharedHttpClient);
+        this.storage = new AtomicReference<>(new StorageClient(this.config));
 
-        // 3. ¡LA MAGIA! Nos suscribimos a los eventos de Auth.
         this.auth.onAuthStateChange(this::handleAuthStateChange);
-
-        // this.realtime = new RealtimeClient(this.config);
-        // this.storage = new StorageClient(this.config);
     }
 
     /**
      * This is the core "glue" of the SDK.
-     * It listens for auth events and creates a new, authenticated
-     * PostgrestClient when the user signs in.
+     * It listens for auth events and creates new, authenticated
+     * clients for Postgrest and Storage.
      */
     private void handleAuthStateChange(AuthChangeEvent event, Session session) {
         if (event == AuthChangeEvent.SIGNED_IN || event == AuthChangeEvent.TOKEN_REFRESHED) {
-            // Usuario ha iniciado sesión.
-            // 1. Obtener el nuevo token JWT.
             String jwt = session.getAccessToken();
 
-            // 2. Crear una nueva config *autenticada*
-            SupabaseConfig authConfig = new SupabaseConfig.Builder(
-                    this.config.getSupabaseUrl().toString(),
-                    this.config.getSupabaseKey()
-            )
-                    .addHeader("Authorization", "Bearer " + jwt) // ¡Añade el token!
-                    .withSchema(this.config.getSchema()) // Mantén el schema
+            SupabaseConfig authConfig = new SupabaseConfig.Builder(this.config.getSupabaseUrl().toString(), this.config.getSupabaseKey())
+                    .addHeader("Authorization", "Bearer " + jwt)
+                    .withSchema(this.config.getSchema())
                     .build();
 
-            // 3. Reemplazar el cliente Postgrest por uno nuevo y autenticado.
+            // 2. Replace the Postgrest client
             this.postgrest.set(new PostgrestClient(authConfig));
 
+            // 3. Replace the Storage client ¡AÑADIDO!
+            this.storage.set(new StorageClient(authConfig));
+
+            // 4. Notify the Realtime client of the new token
+            this.realtime.setAuth(jwt);
+
         } else if (event == AuthChangeEvent.SIGNED_OUT) {
-            // Usuario ha cerrado sesión.
-            // 1. Volver a la configuración anónima original.
+            // 1. Revert Postgrest to the anonymous config
             this.postgrest.set(new PostgrestClient(this.config));
+
+            // 2. Revert Storage to the anonymous config ¡AÑADIDO!
+            this.storage.set(new StorageClient(this.config));
+
+            // 3. Notify Realtime client (revert to anon key)
+            this.realtime.setAuth(this.config.getSupabaseKey());
         }
-        // (Otros eventos como USER_UPDATED no requieren cambiar el cliente,
-        // ya que el JWT sigue siendo el mismo).
     }
 
     /**
@@ -106,54 +109,43 @@ public class SupabaseClient {
         return new SupabaseClient(config);
     }
 
-    /**
-     * Getter for the configuration.
-     *
-     * @return The SupabaseConfig instance.
-     */
-    public SupabaseConfig getConfig() {
-        return this.config;
-    }
 
     // --- Client Accessors ---
 
     /**
      * Accessor for the Authentication client.
+     *
      * @return The AuthClient instance.
      */
     public AuthClient auth() {
         return this.auth;
     }
 
-    /**
-     * Creates a new Postgrest query builder for a specific table.
-     * 'from' is the traditional Supabase entry point for Postgrest.
-     *
-     * @param table The table to query.
-     * @return A PostgrestSelectBuilder instance.
-     */
-    public PostgrestQueryBuilder from(String table) {
-        // Obtenemos el cliente Postgrest *actual* (que puede ser anónimo o auth)
-        return this.postgrest.get().from(table);
-    }
 
     /**
      * Accessor for the Postgrest client (para .rpc(), etc.).
+     *
      * @return The *current* PostgrestClient instance (authenticated or not).
      */
     public PostgrestClient postgrest() {
         return this.postgrest.get();
     }
 
-    /*
+    /**
+     * Accessor for the Realtime client.
+     *
+     * @return The RealtimeClient instance.
+     */
     public RealtimeClient realtime() {
         return this.realtime;
     }
-    */
 
-    /*
+    /**
+     * Accessor for the Storage client.
+     *
+     * @return The *current* StorageClient instance (authenticated or not).
+     */
     public StorageClient storage() {
-        return this.storage;
+        return this.storage.get();
     }
-    */
 }

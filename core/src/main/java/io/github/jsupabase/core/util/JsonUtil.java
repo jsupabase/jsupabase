@@ -1,16 +1,19 @@
 package io.github.jsupabase.core.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference; // <-- IMPORT NECESARIO
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.jsupabase.core.exception.SupabaseException; // IMPORT NECESARIO
+
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Utility class for JSON serialization and deserialization.
  * Uses a Singleton pattern for the ObjectMapper (which is thread-safe).
  *
  * @author neilhdezs
- * @version 0.0.3
+ * @version 0.0.4 // Version actualizada para incluir toMap
  */
 public final class JsonUtil {
 
@@ -59,6 +62,23 @@ public final class JsonUtil {
 
 
     /**
+     * Deserializes a JSON String into a complex generic Java object (e.g., List<T>).
+     *
+     * @param json The JSON String to deserialize.
+     * @param typeRef The TypeReference of the object (e.g., new TypeReference<List<Bucket>>() {}).
+     * @param <T> The generic type of the response.
+     * @return An instance of the responseType.
+     * @throws SupabaseException if the Jackson deserialization fails.
+     */
+    public static <T> T fromJson(String json, TypeReference<T> typeRef) {
+        try {
+            return objectMapper.readValue(json, typeRef);
+        } catch (JsonProcessingException e) {
+            throw new SupabaseException("Failed to deserialize JSON to " + typeRef.getType(), e);
+        }
+    }
+
+    /**
      * Converts a Java object (like a Map) into another type (like a query string map).
      *
      * @param fromValue The object to convert (e.g., a POJO or Map).
@@ -73,5 +93,19 @@ public final class JsonUtil {
         } catch (Exception e) {
             throw new SupabaseException("Failed to convert object", e);
         }
+    }
+
+    /**
+     * Converts a Java object (POJO) into a generic Map<String, Object>.
+     * This is useful for adding/modifying properties before final serialization,
+     * such as injecting 'bucketId' into a ListOptions DTO.
+     *
+     * @param fromValue The object to convert (e.g., a POJO like ListOptions).
+     * @return A Map<String, Object> representing the object's properties.
+     * @throws SupabaseException if the conversion fails.
+     */
+    public static Map<String, Object> toMap(Object fromValue) {
+        TypeReference<Map<String, Object>> mapTypeRef = new TypeReference<>() {};
+        return convertValue(fromValue, mapTypeRef);
     }
 }

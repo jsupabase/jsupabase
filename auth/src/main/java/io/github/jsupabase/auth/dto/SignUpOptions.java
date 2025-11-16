@@ -1,7 +1,7 @@
 package io.github.jsupabase.auth.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Map;
 
 /**
@@ -11,7 +11,6 @@ import java.util.Map;
  * @author neilhdezs
  * @version 0.1.0
  */
-@JsonInclude(JsonInclude.Include.NON_NULL) // ¡Importante!
 public class SignUpOptions {
 
     /** - A URL to send the user to after they are confirmed - **/

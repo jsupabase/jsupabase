@@ -1,8 +1,8 @@
-package io.github.jsupabase.postgrest.builder;
+package io.github.jsupabase.postgrest.builder.base;
 
-import io.github.jsupabase.postgrest.PostgrestClient;
+import io.github.jsupabase.core.client.HttpClientBase;
+import io.github.jsupabase.core.config.SupabaseConfig;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
@@ -14,19 +14,18 @@ import java.util.stream.Collectors;
 
 /**
  * The abstract base class for all PostgREST builders.
- * It holds the shared components: client, table, query parameters,
- * and the URL-building logic.
+ * (Refactored to extend HttpClientBase and use the Gateway architecture)
  *
  * @param <T> The type of the concrete builder (for fluent chaining)
  * @author neilhdezs
- * @version 0.0.4
+ * @version 2.0.0 (Refactored)
  */
-public abstract class PostgrestBaseBuilder<T extends PostgrestBaseBuilder<T>> {
+public abstract class PostgrestBaseBuilder<T extends PostgrestBaseBuilder<T>> extends HttpClientBase {
 
-    /** - The network client for this module - **/
-    protected final PostgrestClient client;
+    /** - The root path for the service (e.g., "/rest/v1") - **/
+    protected final String servicePath;
 
-    /** - The database table this query targets - **/
+    /** - The database table or RPC function name - **/
     protected final String table;
 
     /** - Stores all query parameters (filters, order, select, etc.) - **/
@@ -35,42 +34,41 @@ public abstract class PostgrestBaseBuilder<T extends PostgrestBaseBuilder<T>> {
     /**
      * Creates a new PostgrestBaseBuilder.
      *
-     * @param client The active PostgrestClient.
-     * @param table  The database table or RPC function name.
+     * @param config      The shared SupabaseConfig (para heredarla en HttpClientBase).
+     * @param table       The database table or RPC function name.
      */
-    public PostgrestBaseBuilder(PostgrestClient client, String table) {
-        this.client = Objects.requireNonNull(client, "PostgrestClient cannot be null");
-        this.table = Objects.requireNonNull(table, "Table name cannot be null");
+    public PostgrestBaseBuilder(SupabaseConfig config, String table) {
+        // Llama al constructor de HttpClientBase
+        super(config);
+        this.servicePath = config.getPostgrestPath();
+        this.table = Objects.requireNonNull(table, "Table or function name cannot be null");
     }
 
     /**
-     * Abstract method that concrete builders must implement to return themselves.
-     * This allows for type-safe fluent chaining.
-     *
-     * @return The concrete builder instance (e.g., PostgrestSelectBuilder).
+     * Returns the concrete instance (this) for fluent chaining.
      */
     protected abstract T self();
 
     /**
-     * Builds the final URL path and query string from the table and queryParams.
-     * This is the single source of truth for URL building.
+     * Builds the final path for the request, including the table and query params.
      *
-     * @return A URL-encoded path string (e.g., "/my_table?id=eq.5&select=*")
+     * @return The path string (e.g., "/rest/v1/my_table?select=*&id=eq.5")
      */
     protected String buildPath() {
-        String schema = client.getConfig().getSchema();
-        String pathPrefix = "/rest/v1/" + table;
+        // El path base ahora usa el servicePath local
+        String pathPrefix = this.servicePath + "/" + this.table;
 
-        // Build the query string (e.g., "id=eq.5&select=*")
+        // Lógica de QueryParams
         String queryString = queryParams.entrySet().stream()
                 .map(entry -> {
-                    // URL-encode keys and values
                     String key = URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8);
                     String value = URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8);
                     return key + "=" + value;
                 })
                 .collect(Collectors.joining("&"));
 
+        // Lógica de Schema (ahora usa 'this.config' heredado de HttpClientBase)
+        String schema = this.config.getSchema();
         if (!"public".equals(schema)) {
             String schemaParam = "schema=" + schema;
             if (queryString.isEmpty()) {
@@ -88,7 +86,7 @@ public abstract class PostgrestBaseBuilder<T extends PostgrestBaseBuilder<T>> {
     }
 
     /**
-     * Protected helper for mutation builders (Insert, Update)
+     * Protected helper for mutation builders (Insert, Update, Rpc)
      * to build the common parts of a request that sends a JSON body.
      *
      * @param prefer  The Set of 'Prefer' headers.
@@ -96,14 +94,14 @@ public abstract class PostgrestBaseBuilder<T extends PostgrestBaseBuilder<T>> {
      * @return A pre-configured HttpRequest.Builder.
      */
     protected HttpRequest.Builder buildMutationRequestBuilder(Set<String> prefer, Map<String, String> headers) {
-        // 1. Build the path
+        // 1. Build the path (Usa el buildPath() modificado)
         String path = buildPath();
 
         // 2. Build the 'Prefer' header
         String preferHeader = String.join(",", prefer);
 
-        // 3. Create a request builder
-        HttpRequest.Builder requestBuilder = client.newRequest(path)
+        // 3. Create a request builder (Usa 'this.newRequest()' heredado)
+        HttpRequest.Builder requestBuilder = this.newRequest(path)
                 .header("Prefer", preferHeader)
                 .header("Content-Type", "application/json");
 

@@ -1,42 +1,28 @@
 package io.github.jsupabase.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * DTO for the main successful authentication response.
- * This object is the 'data' part of the response, containing
- * both the session and user details.
+ * A wrapper DTO. For signIn, this will be identical to Session.
+ * For signUp (with email confirm on), it may only contain the User.
  *
  * @author neilhdezs
- * @version 0.1.0
+ * @version 0.1.1
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AuthResponse {
+public class AuthResponse extends Session {
 
-    /** - The user's session object (can be null, e.g., on signup) - **/
-    @JsonProperty("session")
-    private Session session;
-
-    /** - The user object - **/
-    @JsonProperty("user")
-    private User user;
-
-    // Getters and Setters (needed for Jackson deserialization)
-
+    /**
+     * Helper method for AuthClient to check if this response
+     * actually contains a valid session.
+     */
     public Session getSession() {
-        return session;
+        // Si no hay token, no es una sesión válida
+        if (this.getAccessToken() == null) {
+            return null;
+        }
+        return this;
     }
 
-    public void setSession(Session session) {
-        this.session = session;
-    }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 }

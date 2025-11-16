@@ -1,6 +1,5 @@
 package io.github.jsupabase.auth.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -9,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author neilhdezs
  * @version 0.1.0
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+
 public class SignUpCredentials {
 
     @JsonProperty("email")

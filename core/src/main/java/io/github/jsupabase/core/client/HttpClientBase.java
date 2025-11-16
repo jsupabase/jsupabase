@@ -1,13 +1,15 @@
 package io.github.jsupabase.core.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.jsupabase.core.config.SupabaseConfig;
 import io.github.jsupabase.core.exception.SupabaseException;
-import io.github.jsupabase.core.util.JsonUtil; // Make sure this class exists
+import io.github.jsupabase.core.util.JsonUtil;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandler;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
@@ -19,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
  * and JSON serialization/deserialization.
  *
  * @author neilhdezs
- * @version 0.0.3
+ * @version 0.0.5 // Versión actualizada
  */
 public abstract class HttpClientBase {
 
@@ -35,6 +37,13 @@ public abstract class HttpClientBase {
             .version(HttpClient.Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(10))
             .build();
+
+    /**
+     * Getter for the shared, static HttpClient instance.
+     */
+    public static HttpClient getSharedHttpClient() {
+        return SHARED_HTTP_CLIENT;
+    }
 
     /**
      * Constructor for the base client.
@@ -53,7 +62,6 @@ public abstract class HttpClientBase {
      * @return A HttpRequest.Builder ready to be modified (add .GET(), .POST(), etc.)
      */
     public HttpRequest.Builder newRequest(String path) {
-        // Resolve the full URL using the config's base
         URI uri = config.resolveUrl(path);
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
@@ -69,42 +77,91 @@ public abstract class HttpClientBase {
 
     /**
      * Sends an asynchronous request and deserializes the JSON response to a DTO.
+     * (Para DTOs simples como Bucket.class)
      *
      * @param request      The finalized HttpRequest.
-     * @param responseType The DTO's class (e.g., MyPojo.class or List.class).
+     * @param responseType The DTO's class (e.g., MyPojo.class).
      * @param <T>          The DTO's generic type.
      * @return A CompletableFuture with the DTO instance.
      */
     public <T> CompletableFuture<T> sendAsync(HttpRequest request, Class<T> responseType) {
         return SHARED_HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
                 .thenApply(httpResponse -> {
-                    // First, handle HTTP errors
                     if (httpResponse.statusCode() >= 400) {
+                        System.err.println(request.uri());
                         throw new SupabaseException(httpResponse.body(), httpResponse.statusCode());
                     }
-
                     String body = httpResponse.body();
-
-                    // If no response is expected (Void) or the body is empty
                     if (responseType == null || responseType == Void.class || body == null || body.isEmpty()) {
                         return null;
                     }
-
-                    // Deserialize the JSON body to the expected class
                     try {
+                        System.err.println(body);
                         return JsonUtil.fromJson(body, responseType);
                     } catch (Exception e) {
                         throw new SupabaseException("Failed to deserialize JSON: " + e.getMessage(), e);
                     }
                 })
                 .exceptionally(ex -> {
-                    // Catch the SupabaseException or any other network error
                     if (ex.getCause() instanceof SupabaseException) {
                         throw (SupabaseException) ex.getCause();
                     }
                     throw new SupabaseException("Network request failed: " + ex.getMessage(), ex);
                 });
     }
+
+    /**
+     * Sends an asynchronous request and deserializes a generic JSON response (e.g., List<T>).
+     * (Para DTOs complejos como List<Bucket>)
+     *
+     * @param request      The finalized HttpRequest.
+     * @param typeRef      The TypeReference for the DTO.
+     * @param <T>          The DTO's generic type.
+     * @return A CompletableFuture with the DTO instance.
+     */
+    public <T> CompletableFuture<T> sendAsync(HttpRequest request, TypeReference<T> typeRef) {
+        return SHARED_HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+                .thenApply(httpResponse -> {
+                    // (Lógica existente para manejar JSON y errores)
+                    if (httpResponse.statusCode() >= 400) {
+                        throw new SupabaseException(httpResponse.body(), httpResponse.statusCode());
+                    }
+                    String body = httpResponse.body();
+                    if (body == null || body.isEmpty()) {
+                        return null;
+                    }
+                    try {
+                        return JsonUtil.fromJson(body, typeRef);
+                    } catch (Exception e) {
+                        throw new SupabaseException("Failed to deserialize JSON: " + e.getMessage(), e);
+                    }
+                })
+                .exceptionally(ex -> {
+                    if (ex.getCause() instanceof SupabaseException) {
+                        throw (SupabaseException) ex.getCause();
+                    }
+                    throw new SupabaseException("Network request failed: " + ex.getMessage(), ex);
+                });
+    }
+
+    /**
+     * Sends an async request and returns the full HttpResponse.
+     * This is used for custom body handling (e.g., file downloads).
+     *
+     * @param request The finalized HttpRequest.
+     * @param bodyHandler The BodyHandler to use (e.g., BodyHandlers.ofByteArray()).
+     * @param <T> The response body type (e.g., byte[]).
+     * @return A CompletableFuture with the full HttpResponse<T>.
+     */
+    public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request, BodyHandler<T> bodyHandler) {
+        return SHARED_HTTP_CLIENT.sendAsync(request, bodyHandler)
+                .exceptionally(ex -> {
+                    // --- ¡LÍNEA CORREGIDA! ---
+                    // Capturar cualquier error de red
+                    throw new SupabaseException("Network request failed: " + ex.getMessage(), ex);
+                });
+    }
+
 
     /**
      * Sends an asynchronous request that returns a String (e.g., for CSV).
@@ -126,14 +183,5 @@ public abstract class HttpClientBase {
                     }
                     throw new SupabaseException("Network request failed: " + ex.getMessage(), ex);
                 });
-    }
-
-    /**
-     * Getter for the configuration, useful for subclasses.
-     *
-     * @return The SupabaseConfig
-     */
-    public SupabaseConfig getConfig() {
-        return config;
     }
 }

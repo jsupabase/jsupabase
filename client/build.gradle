@@ -3,4 +3,5 @@ dependencies {
     api project(':auth')
     api project(':postgrest')
     api project(':realtime')
+    api project(':storage')
 }

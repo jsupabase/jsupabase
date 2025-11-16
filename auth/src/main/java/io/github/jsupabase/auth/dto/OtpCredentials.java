@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author neilhdezs
  * @version 0.1.0
  */
-@JsonInclude(JsonInclude.Include.NON_NULL) // ¡Muy importante!
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OtpCredentials {
 
     /** - The user's email address (if signing in with email) - **/

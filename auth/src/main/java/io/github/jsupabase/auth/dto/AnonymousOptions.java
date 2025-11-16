@@ -1,7 +1,7 @@
 package io.github.jsupabase.auth.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Map;
 
 /**
@@ -10,7 +10,7 @@ import java.util.Map;
  * @author neilhdezs
  * @version 0.1.0
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+
 public class AnonymousOptions {
 
     /** - A custom data object to store the user's metadata - **/

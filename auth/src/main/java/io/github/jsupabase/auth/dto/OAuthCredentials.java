@@ -1,8 +1,7 @@
 package io.github.jsupabase.auth.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.github.jsupabase.auth.enums.OAuthProvider; // Importamos el Enum
+import io.github.jsupabase.auth.enums.OAuthProvider;
 
 /**
  * DTO for the 'signInWithOAuth' request body.
@@ -10,7 +9,7 @@ import io.github.jsupabase.auth.enums.OAuthProvider; // Importamos el Enum
  * @author neilhdezs
  * @version 0.1.0
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+
 public class OAuthCredentials {
 
     /** - The OAuth provider (e.g., GOOGLE, GITHUB) - **/

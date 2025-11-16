@@ -1,6 +1,7 @@
 package io.github.jsupabase.postgrest.builder;
 
-import io.github.jsupabase.postgrest.PostgrestClient;
+import io.github.jsupabase.core.config.SupabaseConfig;
+import io.github.jsupabase.postgrest.builder.base.PostgrestFilterBuilder;
 import io.github.jsupabase.postgrest.enums.CountType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +15,15 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Builds and executes a PostgREST DELETE query.
+ * <p>
+ * (Refactored to align with the new Gateway architecture and inherit network capabilities.)
  *
  * @author neilhdezs
- * @version 0.0.3
- */
+ * @version 2.0.0 // Version updated
+ */ // TODO IMPLEMENTAR UNA FORMA DE QUE EL DELETE TIENE QUE LLEVAR UN WHERE OBLIGATORIO
 public class PostgrestDeleteBuilder extends PostgrestFilterBuilder<PostgrestDeleteBuilder> {
 
-    /** - LOGGER - **/
+    /** - SLF4J Logger - **/
     private static final Logger LOG = LoggerFactory.getLogger(PostgrestDeleteBuilder.class);
 
     /** - Headers specific to this DELETE request - **/
@@ -31,14 +34,15 @@ public class PostgrestDeleteBuilder extends PostgrestFilterBuilder<PostgrestDele
 
     /**
      * Creates a new PostgrestDeleteBuilder.
+     * <p>
+     * This constructor is called by {@code PostgrestTableClient}.
      *
-     * @param client The active PostgrestClient.
+     * @param config The shared SupabaseConfig, passed to the base constructor.
      * @param table  The database table to query.
      */
-    public PostgrestDeleteBuilder(PostgrestClient client, String table) {
-        super(client, table);
+    public PostgrestDeleteBuilder(SupabaseConfig config, String table) {
+        super(config, table);
 
-        // Por defecto, PostgREST no devuelve nada en un DELETE
         this.prefer.add("return=minimal");
     }
 
@@ -83,6 +87,7 @@ public class PostgrestDeleteBuilder extends PostgrestFilterBuilder<PostgrestDele
     public PostgrestDeleteBuilder count() {
         return count(CountType.EXACT);
     }
+
     // --- Execution Method ---
 
     /**
@@ -95,11 +100,11 @@ public class PostgrestDeleteBuilder extends PostgrestFilterBuilder<PostgrestDele
             // 1. Build the path with filters (inherited)
             String path = buildPath();
 
-            // 2. Build the 'Prefer' header (no necesitamos buildMutationRequestBuilder porque no hay body JSON)
+            // 2. Build the 'Prefer' header
             String preferHeader = String.join(",", this.prefer);
 
-            // 3. Create a request builder (client is inherited)
-            HttpRequest.Builder requestBuilder = client.newRequest(path)
+            // 3. Create a request builder (Usa this.newRequest() heredado)
+            HttpRequest.Builder requestBuilder = this.newRequest(path)
                     .header("Prefer", preferHeader);
 
             // 4. Add any other local headers
@@ -112,10 +117,11 @@ public class PostgrestDeleteBuilder extends PostgrestFilterBuilder<PostgrestDele
 
             LOG.debug("Executing DELETE: {}", request.uri());
 
-            // 6. DELEGATE the call to the client
-            return client.sendAsyncString(request);
+            // 6. DELEGATE the call to the inherited sendAsyncString
+            return this.sendAsyncString(request);
 
         } catch (Exception e) {
+            LOG.error("Failed to build Postgrest DELETE request", e);
             return CompletableFuture.failedFuture(e);
         }
     }

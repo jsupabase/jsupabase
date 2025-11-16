@@ -1,52 +1,57 @@
 package io.github.jsupabase.postgrest.builder;
 
+import io.github.jsupabase.core.config.SupabaseConfig;
 import io.github.jsupabase.core.util.JsonUtil;
-import io.github.jsupabase.postgrest.PostgrestClient;
+import io.github.jsupabase.postgrest.builder.base.PostgrestFilterBuilder;
+import io.github.jsupabase.postgrest.enums.CountType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.http.HttpRequest;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Builds and executes a PostgREST INSERT query.
  *
  * @author neilhdezs
- * @version 0.0.3
+ * @version 2.0.0
  */
-public class PostgrestInsertBuilder extends PostgrestBaseBuilder<PostgrestInsertBuilder> {
+public class PostgrestInsertBuilder extends PostgrestFilterBuilder<PostgrestInsertBuilder> {
 
-    /** - LOGGER - **/
+    /** - SLF4J Logger - **/
     private static final Logger LOG = LoggerFactory.getLogger(PostgrestInsertBuilder.class);
 
-    /** - The data to be inserted (POJO, Map, or List<...>) - **/
+    /** - The data object(s) to insert - **/
     private final Object data;
 
     /** - Headers specific to this INSERT request - **/
     private final Map<String, String> headers = new HashMap<>();
 
-    /** - Set of 'Prefer' header values (e.g., return=representation, resolution=merge-duplicates) - **/
+    /** - Set of 'Prefer' header values (e.g., return=minimal) - **/
     private final Set<String> prefer = new HashSet<>();
 
     /**
      * Creates a new PostgrestInsertBuilder.
      *
-     * @param client The active PostgrestClient.
+     * @param config The shared SupabaseConfig.
      * @param table  The database table to query.
      * @param data   The data (POJO, Map, or List) to insert.
      */
-    public PostgrestInsertBuilder(PostgrestClient client, String table, Object data) {
-        // Llama al constructor de PostgrestBaseBuilder
-        super(client, table);
-        this.data = Objects.requireNonNull(data, "Data object cannot be null");
+    public PostgrestInsertBuilder(SupabaseConfig config, String table, Object data) {
+        super(config, table);
+        this.data = Objects.requireNonNull(data, "Data cannot be null for INSERT.");
 
-        // By default, an INSERT returns nothing
-        this.prefer.add("return=minimal");
+        // Por defecto, PostgREST devuelve el objeto insertado (return=representation)
+        this.prefer.add("return=representation");
     }
 
     /**
-     * Implements the 'self()' method for the generic builder pattern.
+     * {@inheritDoc}
      */
     @Override
     protected PostgrestInsertBuilder self() {
@@ -54,80 +59,83 @@ public class PostgrestInsertBuilder extends PostgrestBaseBuilder<PostgrestInsert
     }
 
     /**
-     * Replaces the old `.returningRepresentation()`.
-     * Requests that PostgREST return the inserted row(s) in the response,
-     * specifying which columns to return.
+     * Specifies the total count of rows inserted.
+     *
+     * @param type The counting algorithm (EXACT, PLANNED, ESTIMATED).
+     * @return this (for Builder chaining)
+     */
+    public PostgrestInsertBuilder count(CountType type) {
+        this.prefer.add("count=" + type.getValue());
+        return this;
+    }
+
+    /**
+     * Specifies the columns to return in the response body.
+     * This implicitly sets 'return=representation' if 'return=minimal' was not set.
      *
      * @param columns The columns to retrieve (e.g., "id, name").
      * @return this (for Builder chaining)
      */
     public PostgrestInsertBuilder select(String columns) {
-        this.prefer.remove("return=minimal");
-        this.prefer.add("return=representation");
-        this.queryParams.put("select", columns); // 'queryParams' es del padre
+        this.queryParams.put("select", columns);
         return this;
     }
 
     /**
-     * Replaces the old `.returningRepresentation()`.
-     * Requests that PostgREST return all columns of the inserted row(s).
-     * (Convenience method for select("*"))
+     * Requests that PostgREST return no body, only headers.
+     * (Prefer: return=minimal)
      *
      * @return this (for Builder chaining)
      */
-    public PostgrestInsertBuilder select() {
-        return select("*");
-    }
-
-    /**
-     * Specifies the column(s) to check for a conflict.
-     *
-     * @param onConflict The column name(s) (e.g., "id", "col1,col2").
-     * @return this (for Builder chaining)
-     */
-    public PostgrestInsertBuilder onConflict(String onConflict) {
-        this.queryParams.put("on_conflict", onConflict);
+    public PostgrestInsertBuilder preferReturnMinimal() {
+        this.prefer.remove("return=representation");
+        this.prefer.add("return=minimal");
         return this;
     }
 
     /**
-     * Performs an "UPSERT" operation.
-     * Requires .onConflict() to be called first.
-     * (Prefer: resolution=merge-duplicates)
+     * Configures the behavior when a conflict occurs (i.e., when performing an {@code INSERT}
+     * where the primary key or unique constraint is already present).
      *
+     * @param columns The constraint columns to check for conflict.
      * @return this (for Builder chaining)
      */
-    public PostgrestInsertBuilder upsert() {
-        // PostgREST requiere el header 'Prefer' para el 'upsert'
-        this.prefer.add("resolution=merge-duplicates");
+    public PostgrestInsertBuilder onConflict(String columns) {
+        this.headers.put("Prefer", "resolution=ignore-duplicates, constraint=" + columns);
         return this;
     }
 
     /**
-     * Executes the built INSERT query asynchronously.
+     * Performs an UPSERT operation (insert or update on conflict).
+     *
+     * @param columns The constraint columns to check for conflict.
+     * @return this (for Builder chaining)
+     */
+    public PostgrestInsertBuilder upsert(String columns) {
+        this.prefer.add("resolution=merge-duplicates, constraint=" + columns);
+        return this;
+    }
+
+    /**
+     * Executes the built INSERT query asynchronously using a POST request.
      *
      * @return A CompletableFuture that will contain the response body as a String.
      */
     public CompletableFuture<String> execute() {
         try {
-            // 1. Serialize the body (the data to insert)
             String jsonBody = JsonUtil.toJson(this.data);
 
-            // 2. Call the new helper method from PostgrestBaseBuilder
-            //    Esto construye la URI y añade headers comunes (Prefer, Content-Type)
+            // Mutation helper builds path, headers, and adds Content-Type
             HttpRequest.Builder requestBuilder = buildMutationRequestBuilder(this.prefer, this.headers);
 
-            // 3. Build the final POST request
-            HttpRequest request = requestBuilder
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .build();
+            HttpRequest request = requestBuilder.POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
 
-            LOG.debug("Executing INSERT (POST): {}", request.uri());
+            LOG.debug("Executing INSERT: {}", request.uri());
 
-            // 4. DELEGATE the call to the client
-            return client.sendAsyncString(request);
+            return this.sendAsyncString(request);
 
         } catch (Exception e) {
+            LOG.error("Failed to build Postgrest INSERT request", e);
             return CompletableFuture.failedFuture(e);
         }
     }

@@ -1,69 +1,167 @@
 # jsupabase: SDK de Java para Supabase
 
-SDK de Java para Supabase. Construido con las librerías nativas del JDK 11 (LTS).
+![Versión](https://img.shields.io/badge/versión-0.1.0-blue.svg)
+![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
+![Licencia](https://img.shields.io/badge/licencia-Apache%202.0-blue.svg)
+
+SDK de Java para Supabase. Construido con las librerías nativas del **JDK 11 (LTS)** para un rendimiento de E/S asíncrono y sin bloqueo.
 
 ## 🎯 Finalidad del Proyecto
 
-`jsupabase` es una iniciativa Open Source para construir un cliente de backend como servicio (BaaS) para Supabase utilizando las mejores prácticas de Java moderno.
+`jsupabase` es una iniciativa Open Source para construir un SDK para brindar a los usuarios la posibilidad de hacer uso de Supabase desde nuestros entornos Java.
 
-**Nuestro objetivo principal es la Baja Latencia y la Eficiencia.** Hemos diseñado la arquitectura para ser completamente asíncrona, basándonos en el **HttpClient nativo de Java 11** para evitar dependencias de red externas pesadas, asegurando el máximo rendimiento en entornos de servidor (como Spring Boot o Jakarta EE).
+**Nuestro objetivo principal es la Baja Latencia y la Eficiencia.**  
+La arquitectura está diseñada para ser completamente asíncrona usando el **HttpClient nativo de Java 11**, evitando dependencias externas pesadas y maximizando el rendimiento en entornos productivos.
 
 ---
 
 ## 🏗️ Arquitectura Modular (Proyecto Multi-Módulo)
 
-El proyecto se estructura en **6 módulos de Gradle** con responsabilidades claras, siguiendo un flujo de dependencia estricto y unidireccional para prevenir problemas de acoplamiento.
+El proyecto está dividido en **6 módulos Gradle** con responsabilidades claras y un flujo de dependencias estrictamente unidireccional:
 
-### Stack Tecnológico
-
-| Componente | Elección | Razón Arquitectónica |
-| :--- | :--- | :--- |
-| **Lenguaje/JDK** | Java 11+ (LTS) | Base mínima para usar el `java.net.http.HttpClient` asíncrono y de alto rendimiento. |
-| **Build Tool** | Gradle | Facilita la gestión de dependencias complejas y la estructura de proyecto multi-módulo (es superior a Maven para este propósito). |
-| **Serialización** | Jackson (`jackson-databind`) | Estándar de la industria para JSON. Rápido, robusto y se centraliza en `core/util/JsonUtil` para manejo de errores. |
-| **Licencia** | Apache 2.0 + CLA | Modelo profesional para asegurar la propiedad intelectual del proyecto y fomentar la colaboración comunitaria. |
-
-### 🧭 Estructura de Módulos y Flujo de Dependencias
-
-La dependencia fluye desde la base (`core`) hacia las funcionalidades (`auth`, `postgrest`, etc.) y, finalmente, al punto de entrada (`client`).
-
-| Módulo | Paquete | Responsabilidad Principal |
-| :--- | :--- | :--- |
-| **`core`** | `io.github.jsupabase.core` | **El Cimiento.** Clases base, configuración (`SupabaseConfig`), excepciones, y utilidades compartidas (`JsonUtil`). |
-| **`client`** | `io.github.jsupabase.client` | **La Fachada/El Agregador.** El único punto de entrada para el usuario. Contiene la clase `SupabaseClient` que delega las llamadas. |
-| **`postgrest`** | `io.github.jsupabase.postgrest` | **Módulo de la Base de Datos.** Implementa la API CRUD, Filtros, Modificadores, y RPC. |
-| **`auth`** | `io.github.jsupabase.auth` | **Módulo de Autenticación.** Gestionará la API GoTrue (registro, login, sesiones JWT). |
-| **`realtime`** | `io.github.jsupabase.realtime` | **Módulo de Tiempo Real.** Gestionará la conexión WebSocket para eventos de base de datos. |
-| **`storage`** | `io.github.jsupabase.storage` | **Módulo de Almacenamiento.** Gestionará la subida, descarga y gestión de archivos. |
+```
+jsupabase/
+├── client/          (La fachada 'SupabaseClient' que une todo)
+├── core/            (El cimiento: Configuración, Red, Utilidades)
+├── auth/            (Autenticación - GoTrue)
+├── postgrest/       (Base de Datos - PostgREST)
+├── storage/         (Próximo paso)
+└── realtime/        (Próximo paso)
+```
 
 ---
 
-## 📐 Detalles de la Implementación por Módulo
+## 🧰 Stack Tecnológico
 
-### 1. `core` (El Cimiento)
+| Componente | Elección | Razón Arquitectónica |
+|-----------|----------|----------------------|
+| **Lenguaje/JDK** | Java 11+ (LTS) | Permite usar `java.net.http.HttpClient` asíncrono. |
+| **Build Tool** | Gradle | Ideal para multi-módulos y rendimiento. |
+| **Serialización** | Jackson | Estándar rápido y robusto para JSON. |
+| **Licencia** | Apache 2.0 + CLA | Modelo profesional y compatible con OSS. |
 
-* **Funcionalidad Principal:** Gestionar la configuración inmutable (`SupabaseConfig`), las excepciones base (`SupabaseException` - `RuntimeException` para async) y la serialización JSON (`JsonUtil`).
-* **Pendiente:** Implementar la clase `HttpClientBase` para centralizar la conexión HTTP/2 y la inyección de cabeceras.
+---
 
-### 2. `client` (La Fachada)
+## 📐 Detalles de Implementación por Módulo
 
-* **Funcionalidad Principal:** Exponer los métodos de fábrica (`client.postgrest()`, `client.auth()`) al usuario.
+### ✔ 1. `core` — COMPLETADO
+- `SupabaseConfig` — Configuración inmutable (Builder Pattern)
+- `HttpClientBase` — Motor HTTP/2 asíncrono con manejo unificado de errores
+- `JsonUtil` — Serialización y deserialización centralizada con Jackson
 
-### 3. `postgrest` (Base de Datos - **DEFINICIÓN COMPLETA**)
+### ✔ 2. `auth` — COMPLETADO
+Cliente stateful que implementa **todo el flujo GoTrue**:
 
-* **Patrón de Filtros:** Utiliza el **`PostgrestFilterBuilder`** abstracto para consolidar todos los filtros (`.eq()`, `.gt()`, `.textSearch()`, `.or()`, etc.) y eliminar la duplicación de código en `Select`, `Update` y `Delete`.
-* **API Fluida:** Utiliza el patrón de "Herencia Genérica" (`protected abstract T self();`) para asegurar que el encadenamiento de métodos sea *type-safe* (ej: `.select().eq().limit()`).
+#### Funciones implementadas:
+- `signUp(email, pass, options)`
+- `signInWithPassword(email, pass)`
+- `signInWithOtpEmail(email, options)`
+- `signInWithOtpPhone(phone, options)`
+- `verifyOtp(params)`
+- `signInWithOAuth(provider, options)`
+- `signInWithIdToken(credentials)`
+- `signInAnonymously(options)`
+- `exchangeCodeForSession(code, verifier)` (PKCE)
+- `getUser(jwt)`
+- `updateUser(attributes)`
+- `signOut()`
+- `refreshSession(refreshToken)`
+- `resetPasswordForEmail(email)`
+- Sistema **onAuthStateChange** (`SIGNED_IN`, `SIGNED_OUT`, `TOKEN_REFRESHED`)
 
-| Tipo de Acción | Clases Principales | Funcionalidades Clave Implementadas |
-| :--- | :--- | :--- |
-| **Lectura (SELECT)** | `PostgrestSelectBuilder` | Filtros heredados, `.limit()`, `.offset()`, `.order()`, `.single()`, `.maybeSingle()`, `.csv()`, `.count()`, `.explain()`. |
-| **Mutación (INSERT)** | `PostgrestInsertBuilder` | `.insert(data)`, `.returningRepresentation()`, `.onConflict()`, `.upsert()`. |
-| **RPC** | `PostgrestRpcBuilder` | `.rpc(fn, args)`, `.select()` (para incrustación en la respuesta). |
+Incluye DTOs completos (`AuthResponse`, `Session`, `User`, etc.) y enums (`OtpType`, `OAuthProvider`).
+
+---
+
+### ✔ 3. `postgrest` — COMPLETADO
+
+#### API Fluida basada en Builders genéricos
+- Filtros (`eq()`, `gt()`, `gte()`, `like()`, `textSearch()`, `or()`, etc.)
+- Select: `.limit()`, `.offset()`, `.order()`, `.single()`, `.maybeSingle()`, `.csv()`, `.count()`, `.explain()`
+- Insert: `.insert()`, `.onConflict()`, `.upsert()`
+- Update: `.update()`
+- Delete: `.delete()`
+- RPC: `.rpc(fn, args)`
+
+Tabla resumen:
+
+| Acción | Clase | Funcionalidades |
+|--------|--------|----------------|
+| **SELECT** | `PostgrestSelectBuilder` | Filtros heredados, single, maybeSingle, csv, explain |
+| **INSERT** | `PostgrestInsertBuilder` | insert, onConflict, upsert |
+| **UPDATE** | `PostgrestUpdateBuilder` | update, returning |
+| **DELETE** | `PostgrestDeleteBuilder` | delete, returning |
+| **RPC** | `PostgrestRpcBuilder` | rpc, select embedding |
+
+---
+
+### ✔ 4. `client` — COMPLETADO
+
+El módulo más importante:
+
+- `SupabaseClient` es la **fachada oficial**
+- Orquesta `auth` y `postgrest`
+- **Actualiza automáticamente el PostgrestClient cuando cambia la sesión**
+- Cuando ocurre `SIGNED_IN`:
+    - Se crea un PostgrestClient **autenticado** con el JWT
+- Cuando ocurre `SIGNED_OUT`:
+    - Se regresa al cliente **anónimo**
+
+---
+
+## 🔗 Integración Automática de Auth + Postgrest
+
+Flujo completo:
+
+1. Creas un `SupabaseClient` (modo anónimo)
+2. Llamas `supabase.auth().signInWithPassword()`
+3. Auth dispara `SIGNED_IN`
+4. El client intercepta el evento
+5. Construye un PostgrestClient autenticado con `Authorization: Bearer <jwt>`
+6. Cualquier `.from("tabla")` posterior usa RLS automáticamente
+
+---
+
+## 🚀 Ejemplo Completo
+
+```java
+SupabaseConfig config = new SupabaseConfig.Builder(SUPABASE_URL, SUPABASE_ANON_KEY).build();
+SupabaseClient supabase = SupabaseClient.create(config);
+
+// Listener de cambios de sesión
+supabase.auth().onAuthStateChange((event, session) -> {
+    System.out.println("EVENTO: " + event);
+});
+
+// Login
+supabase.auth().signInWithPassword("test@example.com", "password123").join();
+
+// Insert autenticado
+String result = supabase.from("profiles")
+                        .insert(Map.of("username", "TestUser"))
+                        .execute()
+                        .join();
+
+System.out.println("Resultado: " + result);
+
+// Logout
+supabase.auth().signOut().join();
+```
 
 ---
 
 ## ⏭️ Próximos Pasos
 
-1.  **Terminar Modificadores de `SELECT`:** Finalizar la implementación de la lógica de cabeceras (`Accept` y `Prefer`) en `PostgrestSelectBuilder` para `.single()`, `.maybeSingle()`, `.csv()`, y `.explain()`.
-2.  **Implementar Cliente HTTP:** Crear la clase final de conexión `HttpClientBase` en el módulo `core`.
-3.  **Módulo `Auth`:** Empezar con el módulo de Autenticación.
+- **Módulo Storage**  
+  Subida, descarga, gestión de buckets, políticas.
+
+- **Módulo Realtime**  
+  Cliente WebSocket con soporte de canales y presencia.
+
+---
+
+## 📄 Licencia
+
+Licencia **Apache 2.0**.  
+Contribuciones requieren firmar el **CLA**.
+

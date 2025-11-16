@@ -1,6 +1,7 @@
 package io.github.jsupabase.auth.events;
 
 import io.github.jsupabase.auth.dto.Session;
+import io.github.jsupabase.auth.enums.AuthChangeEvent;
 
 /**
  * A functional interface (callback) for listening to auth state changes.

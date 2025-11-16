@@ -1,6 +1,8 @@
 package io.github.jsupabase.auth.events;
 
 import io.github.jsupabase.auth.dto.Session;
+import io.github.jsupabase.auth.enums.AuthChangeEvent;
+
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
