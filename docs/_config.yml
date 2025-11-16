@@ -1,0 +1,30 @@
+theme: jekyll-theme-primer
+title: "jsupabase: De Concepto a Producción en 72 Horas"
+description: "Un caso de estudio sobre arquitectura moderna, patrones de diseño y el futuro del desarrollo de software con IA"
+
+# Configuración básica de Jekyll
+baseurl: ""
+url: "https://tu-usuario.github.io/jsupabase"
+
+# Plugins incluidos en GitHub Pages
+plugins:
+  - jekyll-default-layout
+  - jekyll-titles-from-headings
+
+# Configuración de Markdown
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+# Excluir archivos del build
+exclude:
+  - README.md
+  - LICENSE
+  - build.gradle
+  - gradlew
+  - gradlew.bat
+  - settings.gradle
+  - "*.gradle"
+
