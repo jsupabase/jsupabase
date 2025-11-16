@@ -8,6 +8,7 @@ import io.github.jsupabase.auth.enums.OAuthProvider;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 
 public class OAuthCredentials {
@@ -22,8 +23,9 @@ public class OAuthCredentials {
 
     /**
      * Creates a new OAuthCredentials instance.
+     *
      * @param provider The OAuth provider.
-     * @param options The (optional) options.
+     * @param options  The (optional) options.
      */
     public OAuthCredentials(OAuthProvider provider, OAuthOptions options) {
         this.provider = provider;
@@ -32,6 +34,7 @@ public class OAuthCredentials {
 
     /**
      * Creates a new OAuthCredentials instance (no options).
+     *
      * @param provider The OAuth provider.
      */
     public OAuthCredentials(OAuthProvider provider) {

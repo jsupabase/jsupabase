@@ -12,6 +12,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public class AuthEventManager {
 
@@ -47,7 +48,7 @@ public class AuthEventManager {
      * Notifies all registered listeners of an auth event.
      * (This will be called by AuthClient)
      *
-     * @param event The event that occurred.
+     * @param event   The event that occurred.
      * @param session The current session (or null).
      */
     public void notify(AuthChangeEvent event, Session session) {

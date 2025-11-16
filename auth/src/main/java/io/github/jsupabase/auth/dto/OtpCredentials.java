@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OtpCredentials {
@@ -38,7 +39,7 @@ public class OtpCredentials {
     /**
      * Creates an OtpCredentials instance for an email sign-in.
      *
-     * @param email The user's email.
+     * @param email   The user's email.
      * @param options The (optional) OTP options.
      * @return A new OtpCredentials instance.
      */
@@ -59,7 +60,7 @@ public class OtpCredentials {
     /**
      * Creates an OtpCredentials instance for a phone sign-in.
      *
-     * @param phone The user's phone number.
+     * @param phone   The user's phone number.
      * @param options The (optional) OTP options.
      * @return A new OtpCredentials instance.
      */

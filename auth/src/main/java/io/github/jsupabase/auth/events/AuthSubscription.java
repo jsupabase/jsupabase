@@ -5,6 +5,7 @@ package io.github.jsupabase.auth.events;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public class AuthSubscription {
 
@@ -19,7 +20,7 @@ public class AuthSubscription {
      * (Package-private, only the AuthEventManager should create this)
      *
      * @param eventManager The manager responsible for this subscription.
-     * @param listener The listener to be removed upon unsubscribing.
+     * @param listener     The listener to be removed upon unsubscribing.
      */
     AuthSubscription(AuthEventManager eventManager, AuthStateChangeListener listener) {
         this.eventManager = eventManager;

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NetworkBansResponse {
@@ -19,6 +20,11 @@ public class NetworkBansResponse {
     private String createdAt;
 
     // Getters
-    public String getIpAddress() { return ipAddress; }
-    public String getCreatedAt() { return createdAt; }
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
 }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public class ResetPasswordCredentials {
 
@@ -17,6 +18,7 @@ public class ResetPasswordCredentials {
 
     /**
      * Creates a new credentials instance for password reset.
+     *
      * @param email The user's email.
      */
     public ResetPasswordCredentials(String email) {

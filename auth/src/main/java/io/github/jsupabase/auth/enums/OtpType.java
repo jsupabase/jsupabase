@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public enum OtpType {
 
@@ -36,6 +37,7 @@ public enum OtpType {
     /**
      * This annotation tells Jackson to serialize the enum
      * using this method's return value.
+     *
      * @return The lowercase string value.
      */
     @JsonValue

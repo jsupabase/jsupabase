@@ -10,6 +10,7 @@ import io.github.jsupabase.auth.enums.OtpType;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VerifyOtpParams {
@@ -32,7 +33,7 @@ public class VerifyOtpParams {
      * @param email The email (if type is email-based).
      * @param phone The phone (if type is phone-based).
      * @param token The OTP code the user provided.
-     * @param type The type of OTP (e.g., SIGNUP, RECOVERY).
+     * @param type  The type of OTP (e.g., SIGNUP, RECOVERY).
      */
     public VerifyOtpParams(String email, String phone, String token, OtpType type) {
         this.email = email;

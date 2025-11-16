@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrganizationResponse {
@@ -28,9 +29,23 @@ public class OrganizationResponse {
     private String createdAt;
 
     // Getters
-    public String getId() { return id; }
-    public String getName() { return name; }
-    public String getSlug() { return slug; }
-    public String getBillingEmail() { return billingEmail; }
-    public String getCreatedAt() { return createdAt; }
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public String getBillingEmail() {
+        return billingEmail;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
 }

@@ -11,6 +11,7 @@ import java.util.Map;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserIdentity {

@@ -11,8 +11,9 @@ import java.util.Map;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
- // ¡Importante!
+// ¡Importante!
 public class UserAttributes {
 
     /** - A new email address for the user - **/
@@ -33,6 +34,29 @@ public class UserAttributes {
         this.email = builder.email;
         this.password = builder.password;
         this.data = builder.data;
+    }
+
+    /**
+     * Creates a new builder for UserAttributes.
+     *
+     * @return A new Builder instance.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    // Getters (for serialization)
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Map<String, Object> getData() {
+        return data;
     }
 
     public static class Builder {
@@ -58,27 +82,5 @@ public class UserAttributes {
         public UserAttributes build() {
             return new UserAttributes(this);
         }
-    }
-
-    /**
-     * Creates a new builder for UserAttributes.
-     * @return A new Builder instance.
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    // Getters (for serialization)
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public Map<String, Object> getData() {
-        return data;
     }
 }

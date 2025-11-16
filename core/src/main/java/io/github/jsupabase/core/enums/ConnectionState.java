@@ -5,6 +5,7 @@ package io.github.jsupabase.core.enums;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public enum ConnectionState {
     /** - The client is actively trying to establish a connection. - **/

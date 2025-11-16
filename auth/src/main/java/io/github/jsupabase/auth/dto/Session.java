@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Session {

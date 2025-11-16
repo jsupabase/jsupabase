@@ -10,8 +10,9 @@ import java.util.Map;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
- // ¡Importante!
+// ¡Importante!
 public class OAuthOptions {
 
     /** - A URL to send the user to after they are confirmed - **/
@@ -32,6 +33,28 @@ public class OAuthOptions {
         this.redirectTo = builder.redirectTo;
         this.scopes = builder.scopes;
         this.queryParams = builder.queryParams;
+    }
+
+    /**
+     * Creates a new builder for OAuthOptions.
+     *
+     * @return A new Builder instance.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getters (for serialization)
+    public String getRedirectTo() {
+        return redirectTo;
+    }
+
+    public String getScopes() {
+        return scopes;
+    }
+
+    public Map<String, String> getQueryParams() {
+        return queryParams;
     }
 
     public static class Builder {
@@ -58,17 +81,4 @@ public class OAuthOptions {
             return new OAuthOptions(this);
         }
     }
-
-    /**
-     * Creates a new builder for OAuthOptions.
-     * @return A new Builder instance.
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    // Getters (for serialization)
-    public String getRedirectTo() { return redirectTo; }
-    public String getScopes() { return scopes; }
-    public Map<String, String> getQueryParams() { return queryParams; }
 }

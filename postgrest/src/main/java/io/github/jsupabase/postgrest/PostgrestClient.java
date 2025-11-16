@@ -5,56 +5,68 @@ import io.github.jsupabase.core.config.SupabaseConfig;
 import io.github.jsupabase.postgrest.clients.PostgrestRpcClient;
 import io.github.jsupabase.postgrest.clients.PostgrestTableClient;
 
-import java.util.Objects;
-
 /**
- * Main entry point for the Supabase PostgREST API.
+ * - POSTGRESQL REST API CLIENT -
  * <p>
- * This class acts as a <strong>Gateway</strong> (or Factory) that provides access
- * to specialized clients for Table and RPC operations.
+ * Gateway client for accessing Supabase PostgreSQL database operations via the PostgREST API.
+ * This client provides a unified interface for both table-based CRUD operations and stored
+ * procedure execution through specialized sub-clients.
  * <p>
- * It <strong>extends HttpClientBase</strong> to inherit and manage the authentication
- * state (JWT) from the main SupabaseClient, passing it down to all
- * specialized sub-clients.
+ * The Gateway pattern implementation enables seamless access to different database operation
+ * types while maintaining consistent authentication and configuration management. All
+ * sub-clients automatically inherit the authentication state from the parent client,
+ * ensuring proper JWT token propagation for authenticated database operations.
+ * <p>
+ * Table operations support comprehensive querying with filters, ordering, pagination,
+ * and real-time subscriptions, while RPC operations enable execution of custom database
+ * functions and stored procedures with type-safe parameter passing.
  *
  * @author neilhdezs
- * @version 1.0.0 (Refactored to Gateway pattern)
+ * @version 0.1.0
+ * @since 0.1.0
  */
 public class PostgrestClient extends HttpClientBase {
 
-    /** - Client for RPC operations (GET/POST /rpc/{function}) - **/
+    /** - Specialized client for database stored procedure and function execution - */
     private final PostgrestRpcClient rpcClient;
 
     /**
-     * Creates a new PostgrestClient (Gateway).
+     * - POSTGREST CLIENT CONSTRUCTOR -
+     * <p>
+     * Initializes the PostgreSQL REST API client with the provided configuration
+     * and creates specialized sub-clients for different operation types. The client
+     * inherits HTTP functionality and authentication management from HttpClientBase.
      *
-     * @param config The client configuration.
+     * @param config Supabase configuration containing PostgreSQL REST API settings
      */
     public PostgrestClient(SupabaseConfig config) {
         super(config);
-
         this.rpcClient = new PostgrestRpcClient(config);
     }
 
     /**
-     * Provides access to the client for <strong>Table</strong> operations.
+     * - TABLE OPERATIONS CLIENT FACTORY -
      * <p>
-     * This is a factory method that creates a new client instance
-     * bound to the specified {@code table}.
+     * Creates a new specialized client for database table operations including
+     * SELECT, INSERT, UPDATE, DELETE with comprehensive filtering, ordering,
+     * and pagination capabilities. Each table client is bound to a specific
+     * database table and inherits the authentication context from the parent client.
      *
-     * @param table The name of the database table to interact with (e.g., "profiles").
-     * @return A new {@link PostgrestTableClient} instance bound to that table.
+     * @param table Database table name for CRUD operations
+     * @return New PostgrestTableClient instance configured for the specified table
      */
     public PostgrestTableClient table(String table) {
         return new PostgrestTableClient(this.config, table);
     }
 
     /**
-     * Provides access to the client for <strong>RPC (Remote Procedure Call)</strong> operations.
+     * - RPC OPERATIONS CLIENT ACCESS -
      * <p>
-     * Corresponds to the {@code /rpc} endpoint group.
+     * Provides access to the specialized client for executing database stored
+     * procedures and functions via the PostgREST RPC endpoint. Enables type-safe
+     * parameter passing and result handling for custom database logic execution.
      *
-     * @return The singleton PostgrestRpcClient instance.
+     * @return PostgrestRpcClient instance for stored procedure execution
      */
     public PostgrestRpcClient rpc() {
         return this.rpcClient;

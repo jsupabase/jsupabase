@@ -7,36 +7,45 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * DTO for the main 'User' object returned by Supabase Auth.
- * This contains all user information.
+ * - USER DATA TRANSFER OBJECT -
+ * <p>
+ * Data transfer object representing a Supabase user with comprehensive profile information
+ * and authentication metadata. This immutable DTO contains all user-related data returned
+ * by the Supabase Auth API including identity information, authentication timestamps,
+ * metadata fields, and associated user identities from OAuth providers.
+ * <p>
+ * The User object is typically received after successful authentication operations and
+ * contains both public profile information and authentication-specific metadata such as
+ * email verification status and account creation timestamps.
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
 
-    /** - The user's unique identifier - **/
+    /** - Unique user identifier assigned by Supabase Auth system - */
     @JsonProperty("id")
     private String id;
 
-    /** - The audience claim for the JWT - **/
+    /** - JWT audience claim identifying the intended recipient of the token - */
     @JsonProperty("aud")
     private String audience;
 
-    /** - The user's role - **/
+    /** - User role for authorization and access control within the application - */
     @JsonProperty("role")
     private String role;
 
-    /** - The user's email address - **/
+    /** - Primary email address associated with the user account - */
     @JsonProperty("email")
     private String email;
 
-    /** - The user's phone number - **/
+    /** - Phone number associated with the user account for SMS authentication - */
     @JsonProperty("phone")
     private String phone;
 
-    /** - The timestamp of when the user was created - **/
+    /** - ISO timestamp of when the user account was initially created - */
     @JsonProperty("created_at")
     private String createdAt;
 

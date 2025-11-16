@@ -6,9 +6,12 @@ import io.github.jsupabase.auth.enums.OAuthProvider;
 import io.github.jsupabase.auth.events.AuthEventManager;
 import io.github.jsupabase.auth.events.AuthStateChangeListener;
 import io.github.jsupabase.auth.events.AuthSubscription;
+import io.github.jsupabase.auth.utils.AuthConstants;
 import io.github.jsupabase.core.client.HttpClientBase;
 import io.github.jsupabase.core.config.SupabaseConfig;
 import io.github.jsupabase.core.util.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -19,28 +22,49 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Client for Supabase Auth (GoTrue).
- * Inherits all network logic from HttpClientBase.
- * This client is stateful and manages the current user session.
+ * - SUPABASE AUTHENTICATION CLIENT -
+ * <p>
+ * Specialized client for Supabase Authentication operations via the GoTrue API.
+ * This stateful client manages user sessions, authentication events, and provides
+ * comprehensive user management functionality including sign-up, sign-in, password
+ * recovery, and OAuth integration.
+ * <p>
+ * The client maintains internal session state with thread-safe operations and
+ * implements an event-driven architecture that notifies listeners of authentication
+ * state changes. This enables automatic reconfiguration of other SDK modules when
+ * users authenticate or sign out.
+ * <p>
+ * All network operations inherit from HttpClientBase but with custom header management
+ * to handle authentication-specific requirements where Authorization headers are
+ * managed explicitly rather than through base configuration.
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public class AuthClient extends HttpClientBase {
 
-    /** - The path prefix for this service (e.g., "/auth/v1") - **/
+    /** - Logger for authentication operations and state changes - **/
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthClient.class);
+
+    /** - Authentication service endpoint path for GoTrue API operations - **/
     private final String servicePath;
 
-    /** - Manages all event listeners - **/
+    /** - Event management system for authentication state change notifications - */
     private final AuthEventManager eventManager;
 
-    /** - Stores the current session state in a thread-safe way - **/
+    /** - Thread-safe container for current user session state - */
     private final AtomicReference<Session> currentSession = new AtomicReference<>();
 
     /**
-     * Creates a new AuthClient.
+     * - AUTHENTICATION CLIENT CONSTRUCTOR -
+     * <p>
+     * Initializes a new authentication client with the provided configuration
+     * and sets up the event management system for authentication state changes.
+     * The client inherits HTTP functionality from HttpClientBase while implementing
+     * authentication-specific header management.
      *
-     * @param config The client configuration.
+     * @param config Supabase configuration containing authentication service settings
      */
     public AuthClient(SupabaseConfig config) {
         super(Objects.requireNonNull(config, "SupabaseConfig cannot be null"));
@@ -49,28 +73,29 @@ public class AuthClient extends HttpClientBase {
     }
 
     /**
-     * Creates a new HttpRequest.Builder pre-configured for an Auth request.
+     * - AUTHENTICATION REQUEST BUILDER -
      * <p>
-     * This method overrides the base implementation to **explicitly skip** adding
-     * the 'Authorization' header from the base config. The AuthClient manages
-     * authorization itself, either by sending no token (e.g., signIn) or by
-     * adding the token manually (e.g., getUser).
+     * Creates a pre-configured HTTP request builder for authentication operations.
+     * This method overrides the base implementation to exclude automatic Authorization
+     * headers, allowing the AuthClient to manage authentication tokens explicitly
+     * based on the specific operation being performed.
+     * <p>
+     * Some operations like sign-in require no authentication token, while others
+     * like user profile retrieval need the current session token to be added manually.
      *
-     * @param path The relative path (e.g., "/user", "/token").
-     * @return A HttpRequest.Builder ready for the Auth request.
+     * @param path Relative endpoint path for the authentication operation
+     * @return HTTP request builder configured for authentication service calls
      */
     @Override
     public HttpRequest.Builder newRequest(String path) {
-        // 1. Resuelve la URL (heredado de HttpClientBase)
         URI uri = config.resolveUrl(path);
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(uri)
-                .timeout(Duration.ofSeconds(15)); // (Necesitarás: import java.time.Duration;)
+                .timeout(Duration.ofSeconds(15));
 
-        // 2. Añade todas las cabeceras EXCEPTO 'Authorization'
         for (Map.Entry<String, String> header : config.getHeaders().entrySet()) {
-            if (!header.getKey().equalsIgnoreCase("Authorization")) {
+            if (!header.getKey().equalsIgnoreCase(AuthConstants.HDR_AUTHORIZATION)) {
                 builder.header(header.getKey(), header.getValue());
             }
         }
@@ -78,45 +103,52 @@ public class AuthClient extends HttpClientBase {
         return builder;
     }
 
-
-    // --- Event & State Management ---
-
     /**
-     * Subscribes to authentication state changes.
+     * - AUTHENTICATION STATE CHANGE SUBSCRIPTION -
+     * <p>
+     * Registers a listener for authentication state change events including sign-in,
+     * sign-out, token refresh, and session initialization. This enables reactive
+     * programming patterns where other components can respond to authentication
+     * changes automatically.
      *
-     * @param listener The callback to execute when an event occurs.
-     * @return An AuthSubscription object to manage the subscription.
+     * @param listener Callback function to execute when authentication events occur
+     * @return AuthSubscription instance for managing the event subscription lifecycle
      */
     public AuthSubscription onAuthStateChange(AuthStateChangeListener listener) {
         return eventManager.addListener(listener);
     }
 
     /**
-     * Gets the current session from the client's state.
+     * - CURRENT SESSION ACCESS -
+     * <p>
+     * Returns the currently active user session containing access tokens, user
+     * information, and session metadata. This method provides thread-safe access
+     * to the current authentication state.
      *
-     * @return The current Session, or null if not authenticated.
+     * @return Active Session object if user is authenticated, null otherwise
      */
     public Session getSession() {
         return currentSession.get();
     }
 
     /**
-     * Restores the authentication state by manually setting an active session.
+     * - SESSION STATE RESTORATION -
      * <p>
-     * This method is crucial for **session persistence** in applications (e.g., mobile
-     * apps, stateful backend services like Spring applications) where the session
-     * must be loaded from external storage (cache, local storage) upon application
-     * startup.
+     * Manually sets an active user session for session persistence scenarios.
+     * This method is essential for applications that need to restore authentication
+     * state from external storage such as local storage, secure cookies, or cache
+     * systems when the application restarts.
      * <p>
-     * It updates the internal state and notifies all listeners with the
-     * {@code INITIAL_SESSION} event, allowing other SDK clients (Postgrest, Storage)
-     * to immediately reconfigure themselves with the user's valid JWT.
+     * Upon setting the session, the client updates its internal state and triggers
+     * an INITIAL_SESSION event, enabling all other SDK modules to automatically
+     * reconfigure themselves with the restored authentication context.
      *
-     * @param session The complete session object to set as active.
+     * @param session Complete session object containing user data and authentication tokens
      */
     public void setSession(Session session) {
         this.currentSession.set(session);
         eventManager.notify(AuthChangeEvent.INITIAL_SESSION, session);
+        LOGGER.info(AuthConstants.LOG_SESSION_SET);
     }
 
     // --- Stateful Auth Methods (Sign In / Sign Up) ---
@@ -158,20 +190,21 @@ public class AuthClient extends HttpClientBase {
      */
     public CompletableFuture<AuthResponse> signUp(String email, String password, SignUpOptions options) {
         try {
+            LOGGER.debug(AuthConstants.LOG_SIGNUP_INITIATED, email);
             SignUpCredentials credentials = new SignUpCredentials(email, password, options);
             String jsonBody = JsonUtil.toJson(credentials);
             String path = AuthPaths.getSignupPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
             return sendAsync(request, AuthResponse.class)
-                    // el logged se realiza automaticamente si no es necesaria una verificacion
                     .thenApply(this::handleSignInResponse);
 
         } catch (Exception e) {
+            LOGGER.error(AuthConstants.ERROR_SIGNUP_FAILED, e.getMessage());
             return CompletableFuture.failedFuture(e);
         }
     }
@@ -194,19 +227,24 @@ public class AuthClient extends HttpClientBase {
      */
     public CompletableFuture<AuthResponse> signInWithPassword(String email, String password) {
         try {
+            LOGGER.debug("Attempting sign in with password for email: {}", email);
             EmailPasswordCredentials credentials = new EmailPasswordCredentials(email, password);
             String jsonBody = JsonUtil.toJson(credentials);
-            String path = AuthPaths.getTokenPath(this.servicePath) + "?grant_type=password";
+            String path = AuthPaths.getTokenPath(this.servicePath) + AuthConstants.QUERY_GRANT_PASSWORD;
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
             return sendAsync(request, AuthResponse.class)
-                    .thenApply(this::handleSignInResponse);
+                    .thenApply(response -> {
+                        LOGGER.info(AuthConstants.LOG_SIGNIN_SUCCESS, email);
+                        return handleSignInResponse(response);
+                    });
 
         } catch (Exception e) {
+            LOGGER.error(AuthConstants.ERROR_SIGNIN_FAILED, e.getMessage());
             return CompletableFuture.failedFuture(e);
         }
     }
@@ -232,7 +270,7 @@ public class AuthClient extends HttpClientBase {
             String path = AuthPaths.getSsoIdTokenPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
@@ -284,17 +322,19 @@ public class AuthClient extends HttpClientBase {
      */
     public CompletableFuture<AuthResponse> signInAnonymously(AnonymousOptions options) {
         try {
+            LOGGER.debug("Initiating anonymous sign-in");
             String jsonBody = (options == null) ? "{}" : JsonUtil.toJson(options);
-            String path = AuthPaths.getSignupPath(this.servicePath) + "?anon=true";
+            String path = AuthPaths.getSignupPath(this.servicePath) + AuthConstants.QUERY_ANON_TRUE;
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
             return sendAsync(request, AuthResponse.class)
                     .thenApply(this::handleSignInResponse);
         } catch (Exception e) {
+            LOGGER.error(AuthConstants.ERROR_SIGNIN_FAILED, e.getMessage());
             return CompletableFuture.failedFuture(e);
         }
     }
@@ -315,18 +355,23 @@ public class AuthClient extends HttpClientBase {
      */
     public CompletableFuture<AuthResponse> verifyOtp(VerifyOtpParams params) {
         try {
+            LOGGER.debug("Verifying OTP");
             String jsonBody = JsonUtil.toJson(params);
             String path = AuthPaths.getVerifyPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
             return sendAsync(request, AuthResponse.class)
-                    .thenApply(this::handleSignInResponse);
+                    .thenApply(response -> {
+                        LOGGER.info(AuthConstants.LOG_OTP_VERIFIED);
+                        return handleSignInResponse(response);
+                    });
 
         } catch (Exception e) {
+            LOGGER.error("OTP verification failed: {}", e.getMessage());
             return CompletableFuture.failedFuture(e);
         }
     }
@@ -357,7 +402,7 @@ public class AuthClient extends HttpClientBase {
             String path = AuthPaths.getTokenPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
@@ -387,12 +432,13 @@ public class AuthClient extends HttpClientBase {
      */
     public CompletableFuture<AuthResponse> refreshSession(String refreshToken) {
         try {
+            LOGGER.debug("Refreshing session with refresh token");
             RefreshCredentials credentials = new RefreshCredentials(refreshToken);
             String jsonBody = JsonUtil.toJson(credentials);
-            String path = AuthPaths.getTokenPath(this.servicePath) + "?grant_type=refresh_token";
+            String path = AuthPaths.getTokenPath(this.servicePath) + AuthConstants.QUERY_GRANT_REFRESH;
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
@@ -400,10 +446,12 @@ public class AuthClient extends HttpClientBase {
                     .thenApply(authResponse -> {
                         this.currentSession.set(authResponse.getSession());
                         eventManager.notify(AuthChangeEvent.TOKEN_REFRESHED, authResponse.getSession());
+                        LOGGER.info(AuthConstants.LOG_SESSION_REFRESHED, authResponse.getSession().getUser().getEmail());
                         return authResponse;
                     });
 
         } catch (Exception e) {
+            LOGGER.error(AuthConstants.ERROR_REFRESH_FAILED, e.getMessage());
             return CompletableFuture.failedFuture(e);
         }
     }
@@ -505,7 +553,7 @@ public class AuthClient extends HttpClientBase {
             String path = AuthPaths.getOtpPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
@@ -571,7 +619,7 @@ public class AuthClient extends HttpClientBase {
             String path = AuthPaths.getOAuthPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
@@ -601,15 +649,18 @@ public class AuthClient extends HttpClientBase {
         try {
             Session session = currentSession.get();
             if (session == null || session.getAccessToken() == null) {
+                LOGGER.debug("No active session to sign out");
                 return CompletableFuture.completedFuture(null);
             }
             return signOut(session.getAccessToken())
                     .thenApply(voidResult -> {
                         this.currentSession.set(null);
                         eventManager.notify(AuthChangeEvent.SIGNED_OUT, null);
+                        LOGGER.info(AuthConstants.LOG_SIGNOUT);
                         return voidResult;
                     });
         } catch (Exception e) {
+            LOGGER.error(AuthConstants.ERROR_SIGNOUT_FAILED, e.getMessage());
             return CompletableFuture.failedFuture(e);
         }
     }
@@ -695,7 +746,7 @@ public class AuthClient extends HttpClientBase {
             String path = AuthPaths.getUserPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Authorization", "Bearer " + jwt)
+                    .header(AuthConstants.HDR_AUTHORIZATION, "Bearer " + jwt)
                     .GET()
                     .build();
 
@@ -730,8 +781,8 @@ public class AuthClient extends HttpClientBase {
             String path = AuthPaths.getUserPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Authorization", "Bearer " + jwt)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_AUTHORIZATION, "Bearer " + jwt)
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
@@ -762,7 +813,7 @@ public class AuthClient extends HttpClientBase {
             String path = AuthPaths.getLogoutPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Authorization", "Bearer " + jwt)
+                    .header(AuthConstants.HDR_AUTHORIZATION, "Bearer " + jwt)
                     .POST(HttpRequest.BodyPublishers.noBody())
                     .build();
             return sendAsync(request, Void.class);
@@ -792,7 +843,7 @@ public class AuthClient extends HttpClientBase {
             String path = AuthPaths.getRecoverPath(this.servicePath);
 
             HttpRequest request = newRequest(path)
-                    .header("Content-Type", "application/json")
+                    .header(AuthConstants.HDR_CONTENT_TYPE, AuthConstants.MIME_JSON)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 

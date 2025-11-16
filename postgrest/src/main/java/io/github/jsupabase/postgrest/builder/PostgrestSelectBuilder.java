@@ -24,7 +24,8 @@ import java.util.concurrent.CompletableFuture;
  * (Refactored for the new HttpClientBase/Gateway architecture)
  *
  * @author neilhdezs
- * @version 2.0.0 (Refactored)
+ * @version 0.1.0
+ * @since 0.1.0
  */
 public class PostgrestSelectBuilder extends PostgrestFilterBuilder<PostgrestSelectBuilder> {
 
@@ -40,9 +41,9 @@ public class PostgrestSelectBuilder extends PostgrestFilterBuilder<PostgrestSele
      * This constructor is called by {@link io.github.jsupabase.postgrest.clients.PostgrestTableClient}.
      * It configures the builder to target a specific table and set of columns.
      *
-     * @param config      The shared SupabaseConfig, passed to the HttpClientBase constructor.
-     * @param table       The database table to query.
-     * @param columns     The columns to select (e.g., "id, name, foreign_table(id, name)").
+     * @param config  The shared SupabaseConfig, passed to the HttpClientBase constructor.
+     * @param table   The database table to query.
+     * @param columns The columns to select (e.g., "id, name, foreign_table(id, name)").
      */
     public PostgrestSelectBuilder(SupabaseConfig config, String table, String columns) {
         // Call the super constructor (FilterBuilder -> BaseBuilder)

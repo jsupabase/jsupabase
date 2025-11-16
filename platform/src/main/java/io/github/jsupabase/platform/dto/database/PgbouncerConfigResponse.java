@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PgbouncerConfigResponse {
@@ -24,7 +25,15 @@ public class PgbouncerConfigResponse {
     // ... (Hay muchos más campos, puedes añadirlos según los necesites)
 
     // Getters
-    public String getPoolMode() { return poolMode; }
-    public Integer getMaxClientConn() { return maxClientConn; }
-    public Integer getDefaultPoolSize() { return defaultPoolSize; }
+    public String getPoolMode() {
+        return poolMode;
+    }
+
+    public Integer getMaxClientConn() {
+        return maxClientConn;
+    }
+
+    public Integer getDefaultPoolSize() {
+        return defaultPoolSize;
+    }
 }

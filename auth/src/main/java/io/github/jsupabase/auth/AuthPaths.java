@@ -8,6 +8,7 @@ package io.github.jsupabase.auth;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public final class AuthPaths {
 

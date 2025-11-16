@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 
 public class IdTokenCredentials {
@@ -37,6 +38,34 @@ public class IdTokenCredentials {
         this.nonce = builder.nonce;
     }
 
+    /**
+     * Creates a new builder for IdTokenCredentials.
+     *
+     * @param provider The provider (e.g., "google").
+     * @param token    The OIDC ID token.
+     * @return A new Builder instance.
+     */
+    public static Builder builder(String provider, String token) {
+        return new Builder(provider, token);
+    }
+
+    // Getters (for serialization)
+    public String getProvider() {
+        return provider;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public String getNonce() {
+        return nonce;
+    }
+
     public static class Builder {
         private String provider;
         private String token;
@@ -62,20 +91,4 @@ public class IdTokenCredentials {
             return new IdTokenCredentials(this);
         }
     }
-
-    /**
-     * Creates a new builder for IdTokenCredentials.
-     * @param provider The provider (e.g., "google").
-     * @param token The OIDC ID token.
-     * @return A new Builder instance.
-     */
-    public static Builder builder(String provider, String token) {
-        return new Builder(provider, token);
-    }
-
-    // Getters (for serialization)
-    public String getProvider() { return provider; }
-    public String getToken() { return token; }
-    public String getAccessToken() { return accessToken; }
-    public String getNonce() { return nonce; }
 }

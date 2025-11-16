@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * For signUp (with email confirm on), it may only contain the User.
  *
  * @author neilhdezs
- * @version 0.1.1
+ * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthResponse extends Session {

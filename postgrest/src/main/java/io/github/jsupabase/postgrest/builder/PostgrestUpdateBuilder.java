@@ -8,18 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.http.HttpRequest;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Builds and executes a PostgREST UPDATE query.
  *
  * @author neilhdezs
- * @version 2.0.0
+ * @version 0.1.0
+ * @since 0.1.0
  */
 public class PostgrestUpdateBuilder extends PostgrestFilterBuilder<PostgrestUpdateBuilder> {
 
@@ -38,9 +35,9 @@ public class PostgrestUpdateBuilder extends PostgrestFilterBuilder<PostgrestUpda
     /**
      * Creates a new PostgrestUpdateBuilder.
      *
-     * @param config      The shared SupabaseConfig.
-     * @param table       The database table to query.
-     * @param data        The data (POJO or Map) to update.
+     * @param config The shared SupabaseConfig.
+     * @param table  The database table to query.
+     * @param data   The data (POJO or Map) to update.
      */
     public PostgrestUpdateBuilder(SupabaseConfig config, String table, Object data) {
         super(config, table);

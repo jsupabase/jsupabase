@@ -9,6 +9,7 @@ import java.util.Map;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 
 public class AnonymousOptions {
@@ -26,6 +27,24 @@ public class AnonymousOptions {
     private AnonymousOptions(Builder builder) {
         this.data = builder.data;
         this.captchaToken = builder.captchaToken;
+    }
+
+    /**
+     * Creates a new builder for AnonymousOptions.
+     *
+     * @return A new Builder instance.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getters (for serialization)
+    public Map<String, Object> getData() {
+        return data;
+    }
+
+    public String getCaptchaToken() {
+        return captchaToken;
     }
 
     public static class Builder {
@@ -46,16 +65,4 @@ public class AnonymousOptions {
             return new AnonymousOptions(this);
         }
     }
-
-    /**
-     * Creates a new builder for AnonymousOptions.
-     * @return A new Builder instance.
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    // Getters (for serialization)
-    public Map<String, Object> getData() { return data; }
-    public String getCaptchaToken() { return captchaToken; }
 }

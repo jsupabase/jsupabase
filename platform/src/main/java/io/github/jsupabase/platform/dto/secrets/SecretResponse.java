@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SecretResponse {
@@ -19,6 +20,11 @@ public class SecretResponse {
     private String createdAt;
 
     // Getters
-    public String getName() { return name; }
-    public String getCreatedAt() { return createdAt; }
+    public String getName() {
+        return name;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
 }

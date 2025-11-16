@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public class RefreshCredentials {
 
@@ -17,6 +18,7 @@ public class RefreshCredentials {
 
     /**
      * Creates a new refresh credentials instance.
+     *
      * @param refreshToken The user's refresh token.
      */
     public RefreshCredentials(String refreshToken) {

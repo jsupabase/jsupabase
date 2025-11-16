@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BackupResponse {
@@ -25,8 +26,19 @@ public class BackupResponse {
     private boolean isRestorable;
 
     // Getters
-    public String getId() { return id; }
-    public String getStatus() { return status; }
-    public String getCreatedAt() { return createdAt; }
-    public boolean isRestorable() { return isRestorable; }
+    public String getId() {
+        return id;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public boolean isRestorable() {
+        return isRestorable;
+    }
 }

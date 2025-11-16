@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostgresConfigResponse {
@@ -24,7 +25,15 @@ public class PostgresConfigResponse {
     // ... (Hay muchos más campos)
 
     // Getters
-    public String getStatementTimeout() { return statementTimeout; }
-    public String getEffectiveCacheSize() { return effectiveCacheSize; }
-    public String getSharedBuffers() { return sharedBuffers; }
+    public String getStatementTimeout() {
+        return statementTimeout;
+    }
+
+    public String getEffectiveCacheSize() {
+        return effectiveCacheSize;
+    }
+
+    public String getSharedBuffers() {
+        return sharedBuffers;
+    }
 }

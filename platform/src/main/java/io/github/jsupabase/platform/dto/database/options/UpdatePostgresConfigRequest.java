@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdatePostgresConfigRequest {
@@ -32,7 +33,8 @@ public class UpdatePostgresConfigRequest {
         private String statementTimeout;
         private Integer maxConnections;
 
-        public Builder() {} // Builder vacío para actualizaciones opcionales
+        public Builder() {
+        } // Builder vacío para actualizaciones opcionales
 
         public Builder statementTimeout(String statementTimeout) {
             this.statementTimeout = statementTimeout;

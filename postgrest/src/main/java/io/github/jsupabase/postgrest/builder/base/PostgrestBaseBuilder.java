@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
  *
  * @param <T> The type of the concrete builder (for fluent chaining)
  * @author neilhdezs
- * @version 2.0.0 (Refactored)
+ * @version 0.1.0
+ * @since 0.1.0 (Refactored)
  */
 public abstract class PostgrestBaseBuilder<T extends PostgrestBaseBuilder<T>> extends HttpClientBase {
 
@@ -34,8 +35,8 @@ public abstract class PostgrestBaseBuilder<T extends PostgrestBaseBuilder<T>> ex
     /**
      * Creates a new PostgrestBaseBuilder.
      *
-     * @param config      The shared SupabaseConfig (para heredarla en HttpClientBase).
-     * @param table       The database table or RPC function name.
+     * @param config The shared SupabaseConfig (para heredarla en HttpClientBase).
+     * @param table  The database table or RPC function name.
      */
     public PostgrestBaseBuilder(SupabaseConfig config, String table) {
         // Llama al constructor de HttpClientBase

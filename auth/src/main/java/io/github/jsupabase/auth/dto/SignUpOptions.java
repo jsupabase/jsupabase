@@ -10,6 +10,7 @@ import java.util.Map;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public class SignUpOptions {
 
@@ -26,6 +27,24 @@ public class SignUpOptions {
     private SignUpOptions(Builder builder) {
         this.emailRedirectTo = builder.emailRedirectTo;
         this.data = builder.data;
+    }
+
+    /**
+     * Creates a new builder for SignUpOptions.
+     *
+     * @return A new Builder instance.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getters (for serialization)
+    public String getEmailRedirectTo() {
+        return emailRedirectTo;
+    }
+
+    public Map<String, Object> getData() {
+        return data;
     }
 
     public static class Builder {
@@ -46,16 +65,4 @@ public class SignUpOptions {
             return new SignUpOptions(this);
         }
     }
-
-    /**
-     * Creates a new builder for SignUpOptions.
-     * @return A new Builder instance.
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    // Getters (for serialization)
-    public String getEmailRedirectTo() { return emailRedirectTo; }
-    public Map<String, Object> getData() { return data; }
 }

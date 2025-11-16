@@ -4,7 +4,8 @@ package io.github.jsupabase.postgrest.enums; // <-- Nuevo paquete
  * Defines the sort direction for an {@code .order()} call.
  *
  * @author neilhdezs
- * @version 0.0.3
+ * @version 0.1.0
+ * @since 0.1.0
  */
 public enum Order {
     ASC("asc"),

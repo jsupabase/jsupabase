@@ -3,17 +3,17 @@ package io.github.jsupabase.core.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.jsupabase.core.exception.SupabaseException; // IMPORT NECESARIO
+import io.github.jsupabase.core.exceptions.SupabaseException;
 
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Utility class for JSON serialization and deserialization.
  * Uses a Singleton pattern for the ObjectMapper (which is thread-safe).
  *
  * @author neilhdezs
- * @version 0.0.4 // Version actualizada para incluir toMap
+ * @version 0.1.0
+ * @since 0.1.0
  */
 public final class JsonUtil {
 
@@ -46,9 +46,9 @@ public final class JsonUtil {
     /**
      * Deserializes a JSON String into a Java object (POJO, Map, List).
      *
-     * @param json The JSON String to deserialize.
+     * @param json         The JSON String to deserialize.
      * @param responseType The Class of the object to create (e.g., MyPojo.class).
-     * @param <T> The generic type of the response.
+     * @param <T>          The generic type of the response.
      * @return An instance of the responseType.
      * @throws SupabaseException if the Jackson deserialization fails.
      */
@@ -64,9 +64,9 @@ public final class JsonUtil {
     /**
      * Deserializes a JSON String into a complex generic Java object (e.g., List<T>).
      *
-     * @param json The JSON String to deserialize.
+     * @param json    The JSON String to deserialize.
      * @param typeRef The TypeReference of the object (e.g., new TypeReference<List<Bucket>>() {}).
-     * @param <T> The generic type of the response.
+     * @param <T>     The generic type of the response.
      * @return An instance of the responseType.
      * @throws SupabaseException if the Jackson deserialization fails.
      */
@@ -81,9 +81,9 @@ public final class JsonUtil {
     /**
      * Converts a Java object (like a Map) into another type (like a query string map).
      *
-     * @param fromValue The object to convert (e.g., a POJO or Map).
+     * @param fromValue      The object to convert (e.g., a POJO or Map).
      * @param toValueTypeRef The target type (e.g., new TypeReference<Map<String, String>>() {}).
-     * @param <T> The generic type of the response.
+     * @param <T>            The generic type of the response.
      * @return The converted object.
      * @throws SupabaseException if the conversion fails.
      */
@@ -105,7 +105,8 @@ public final class JsonUtil {
      * @throws SupabaseException if the conversion fails.
      */
     public static Map<String, Object> toMap(Object fromValue) {
-        TypeReference<Map<String, Object>> mapTypeRef = new TypeReference<>() {};
+        TypeReference<Map<String, Object>> mapTypeRef = new TypeReference<>() {
+        };
         return convertValue(fromValue, mapTypeRef);
     }
 }

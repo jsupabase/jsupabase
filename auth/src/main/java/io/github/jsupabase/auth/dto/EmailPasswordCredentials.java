@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public class EmailPasswordCredentials {
 
@@ -21,7 +22,8 @@ public class EmailPasswordCredentials {
 
     /**
      * Creates a new credentials instance.
-     * @param email The user's email.
+     *
+     * @param email    The user's email.
      * @param password The user's password.
      */
     public EmailPasswordCredentials(String email, String password) {

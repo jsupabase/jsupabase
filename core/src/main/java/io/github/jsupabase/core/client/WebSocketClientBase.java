@@ -2,14 +2,13 @@ package io.github.jsupabase.core.client;
 
 import io.github.jsupabase.core.config.SupabaseConfig;
 import io.github.jsupabase.core.enums.ConnectionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -22,8 +21,12 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public abstract class WebSocketClientBase {
+
+    /** - Logger for WebSocket operations - **/
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketClientBase.class);
 
     /** - Immutable configuration for the client - **/
     protected final SupabaseConfig config;
@@ -65,10 +68,10 @@ public abstract class WebSocketClientBase {
      */
     public void connect() {
         if (state.get() != ConnectionState.CLOSED) {
-            return; // Already connecting or open
+            return;
         }
 
-        System.out.println("WebSocket: Connecting...");
+        LOGGER.debug("WebSocket: Connecting ...");
         setState(ConnectionState.CONNECTING);
         URI uri = buildConnectionUri();
 
@@ -81,7 +84,7 @@ public abstract class WebSocketClientBase {
                     startHeartbeat();
                 })
                 .exceptionally(ex -> {
-                    System.err.println("WebSocket: Connection failed: " + ex.getMessage());
+                    LOGGER.error("WebSocket: Connection failed: {}", ex.getMessage());
                     scheduleReconnect(); // Schedule reconnect on failure
                     return null;
                 });
@@ -112,7 +115,7 @@ public abstract class WebSocketClientBase {
         if (ws != null && state.get() == ConnectionState.OPEN) {
             ws.sendText(message, true);
         } else {
-            System.err.println("WebSocket: Cannot send message, connection is not OPEN.");
+            LOGGER.error("WebSocket: Cannot send message, connection is not OPEN.");
         }
     }
 
@@ -170,7 +173,7 @@ public abstract class WebSocketClientBase {
                     sendText(getHeartbeatPayload());
                 }
             } catch (Exception e) {
-                System.err.println("WebSocket: Failed to send heartbeat: " + e.getMessage());
+                LOGGER.error("WebSocket: Failed to send heartbeat: " + e.getMessage());
             }
         }, interval, interval, TimeUnit.SECONDS);
     }
@@ -198,7 +201,7 @@ public abstract class WebSocketClientBase {
         // 1s, 2s, 4s, 8s, 16s, then max 30s
         long delay = (long) Math.min(30, Math.pow(2, reconnectAttempts));
         reconnectAttempts++;
-        System.out.println("WebSocket: Reconnecting in " + delay + " seconds...");
+        LOGGER.debug("WebSocket: Reconnecting in " + delay + " seconds...");
 
         scheduler.schedule(this::connect, delay, TimeUnit.SECONDS);
     }
@@ -216,36 +219,33 @@ public abstract class WebSocketClientBase {
 
         @Override
         public void onOpen(WebSocket ws) {
-            System.out.println("WebSocket: Connection OPEN");
-            // Request the first message
+            LOGGER.info("WebSocket: Connection OPEN");
             ws.request(1);
         }
 
         @Override
-        public java.util.concurrent.CompletionStage<?> onText(WebSocket ws, CharSequence data, boolean last) {
+        public CompletionStage<?> onText(WebSocket ws, CharSequence data, boolean last) {
             textBuffer.append(data);
 
             if (last) {
-                onMessage(textBuffer.toString()); // Forward to abstract handler
-                textBuffer.setLength(0); // Clear buffer
+                onMessage(textBuffer.toString());
+                textBuffer.setLength(0);
             }
 
-            ws.request(1); // Request the next message
+            ws.request(1);
             return null;
         }
 
         @Override
-        public java.util.concurrent.CompletionStage<?> onClose(WebSocket ws, int statusCode, String reason) {
-            System.out.println("WebSocket: Connection CLOSED (" + statusCode + ": " + reason + ")");
-            scheduleReconnect(); // Trigger auto-reconnect
+        public CompletionStage<?> onClose(WebSocket ws, int statusCode, String reason) {
+            LOGGER.info("WebSocket: Connection CLOSED ({}: {})", statusCode, reason);
+            scheduleReconnect();
             return null;
         }
 
         @Override
         public void onError(WebSocket ws, Throwable error) {
-            System.err.println("WebSocket: ERROR: " + error.getMessage());
-            // onClose() will be called automatically after an error,
-            // which will then trigger scheduleReconnect().
+            LOGGER.error("WebSocket: ERROR: {}", error.getMessage());
         }
     }
 }

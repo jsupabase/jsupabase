@@ -25,7 +25,8 @@ import java.util.concurrent.CompletableFuture;
  * It is instantiated by {@code PostgrestClient.rpc().call()}.
  *
  * @author neilhdezs
- * @version 2.0.0 (Refactored)
+ * @version 0.1.0
+ * @since 0.1.0 (Refactored)
  */
 public class PostgrestRpcBuilder extends PostgrestFilterBuilder<PostgrestRpcBuilder> {
 

@@ -18,7 +18,8 @@ import java.util.Objects;
  * Instantiated via `postgrest.table("my_table")`.
  *
  * @author neilhdezs
- * @version 1.0.0 (Refactored to Gateway pattern)
+ * @version 0.1.0
+ * @since 0.1.0 (Refactored to Gateway pattern)
  */
 public class PostgrestTableClient extends HttpClientBase {
 
@@ -31,8 +32,8 @@ public class PostgrestTableClient extends HttpClientBase {
     /**
      * Package-private constructor, called by PostgrestClient (Gateway).
      *
-     * @param config      The Supabase configuration.
-     * @param table       The table name this client is bound to.
+     * @param config The Supabase configuration.
+     * @param table  The table name this client is bound to.
      */
     public PostgrestTableClient(SupabaseConfig config, String table) {
         super(config);

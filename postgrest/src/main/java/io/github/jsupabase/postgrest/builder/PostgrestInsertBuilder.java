@@ -8,18 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.http.HttpRequest;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Builds and executes a PostgREST INSERT query.
  *
  * @author neilhdezs
- * @version 2.0.0
+ * @version 0.1.0
+ * @since 0.1.0
  */
 public class PostgrestInsertBuilder extends PostgrestFilterBuilder<PostgrestInsertBuilder> {
 

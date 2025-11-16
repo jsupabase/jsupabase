@@ -5,6 +5,7 @@ package io.github.jsupabase.auth.enums;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public enum AuthChangeEvent {
 

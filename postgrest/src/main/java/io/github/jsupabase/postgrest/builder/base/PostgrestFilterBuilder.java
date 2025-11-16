@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
  * @param <T> The concrete builder type (e.g., PostgrestSelectBuilder) for fluent chaining.
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public abstract class PostgrestFilterBuilder<T extends PostgrestBaseBuilder<T>> extends PostgrestBaseBuilder<T> {
 
@@ -33,8 +34,8 @@ public abstract class PostgrestFilterBuilder<T extends PostgrestBaseBuilder<T>> 
      * This constructor is called by concrete builders (Select, Update, etc.).
      * It passes the core configuration up to the {@link PostgrestBaseBuilder}.
      *
-     * @param config      The shared SupabaseConfig, which holds the auth state and base URL.
-     * @param table       The database table or RPC function name this builder targets.
+     * @param config The shared SupabaseConfig, which holds the auth state and base URL.
+     * @param table  The database table or RPC function name this builder targets.
      */
     public PostgrestFilterBuilder(SupabaseConfig config, String table) {
         // Pass the required parameters up to the PostgrestBaseBuilder (which extends HttpClientBase)

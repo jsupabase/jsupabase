@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SslEnforcementResponse {
@@ -16,5 +17,7 @@ public class SslEnforcementResponse {
     private boolean status;
 
     // Getter
-    public boolean getStatus() { return status; }
+    public boolean getStatus() {
+        return status;
+    }
 }

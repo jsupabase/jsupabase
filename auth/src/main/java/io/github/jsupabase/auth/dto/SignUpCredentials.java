@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 
 public class SignUpCredentials {
@@ -27,7 +28,15 @@ public class SignUpCredentials {
     }
 
     // Getters
-    public String getEmail() { return email; }
-    public String getPassword() { return password; }
-    public SignUpOptions getOptions() { return options; }
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public SignUpOptions getOptions() {
+        return options;
+    }
 }

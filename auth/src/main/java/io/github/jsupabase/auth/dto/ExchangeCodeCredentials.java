@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public class ExchangeCodeCredentials {
 
@@ -30,8 +31,9 @@ public class ExchangeCodeCredentials {
 
     /**
      * Creates a new credentials instance for PKCE code exchange.
-     * @param clientId The Supabase Anon Key.
-     * @param authCode The authorization code from the URL.
+     *
+     * @param clientId     The Supabase Anon Key.
+     * @param authCode     The authorization code from the URL.
      * @param codeVerifier The PKCE code verifier.
      */
     public ExchangeCodeCredentials(String clientId, String authCode, String codeVerifier) {
@@ -41,8 +43,19 @@ public class ExchangeCodeCredentials {
     }
 
     // Getters (for serialization)
-    public String getGrantType() { return grantType; }
-    public String getClientId() { return clientId; }
-    public String getAuthCode() { return authCode; }
-    public String getCodeVerifier() { return codeVerifier; }
+    public String getGrantType() {
+        return grantType;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public String getAuthCode() {
+        return authCode;
+    }
+
+    public String getCodeVerifier() {
+        return codeVerifier;
+    }
 }

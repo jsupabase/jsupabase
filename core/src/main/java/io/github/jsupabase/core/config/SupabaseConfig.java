@@ -6,42 +6,55 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Stores the configuration for a Supabase client.
- * Instantiated using the Builder pattern.
+ * - SUPABASE CLIENT CONFIGURATION -
+ * <p>
+ * Immutable configuration container for Supabase client instances that stores connection
+ * parameters, authentication keys, HTTP headers, and service endpoint paths. This class
+ * uses the Builder pattern to ensure proper configuration validation and provides
+ * thread-safe access to configuration values across all SDK modules.
+ * <p>
+ * The configuration supports both anonymous and authenticated modes, with automatic
+ * header management for API key authentication and JWT token authorization. Service
+ * paths can be customized to support different API versions or custom Supabase deployments.
  *
  * @author neilhdezs
- * @version 0.0.4
+ * @version 0.1.0
+ * @since 0.1.0
  */
 public final class SupabaseConfig {
 
-    /** - Base URL for the Supabase API - **/
+    /** - Base URL of the Supabase project for all API communications - */
     private final URI supabaseUrl;
 
-    /** - API Key for communication with the Supabase API - **/
+    /** - API key for authentication with Supabase services (anon or service_role) - */
     private final String supabaseKey;
 
-    /** - Headers to include in the request - **/
+    /** - HTTP headers map for request customization including authentication and API key headers - */
     private final Map<String, String> headers;
 
-    /** - Supabase schema to interact with - **/
+    /** - Database schema name for PostgreSQL operations (defaults to 'public') - */
     private final String schema;
 
-    // --- Service Paths (Added in 0.0.4) ---
-    /** - Path prefix for the Auth service (e.g., /auth/v1) - **/
+    /** - Authentication service endpoint path for GoTrue API operations - */
     private final String authPath;
-    /** - Path prefix for the Postgrest service (e.g., /rest/v1) - **/
+
+    /** - PostgreSQL REST service endpoint path for database operations - */
     private final String postgrestPath;
-    /** - Path prefix for the Storage service (e.g., /storage/v1) - **/
+
+    /** - Storage service endpoint path for file management operations - */
     private final String storagePath;
-    /** - Path prefix for the Realtime service (e.g., /realtime/v1) - **/
+
+    /** - Real-time service endpoint path for WebSocket subscriptions - */
     private final String realtimePath;
 
 
     /**
-     * Private constructor to force the use of the Builder pattern.
+     * - PRIVATE CONSTRUCTOR -
+     * <p>
+     * Creates an immutable configuration instance with all required parameters.
+     * Use the Builder pattern for public instantiation to ensure proper validation.
      */
-    private SupabaseConfig(URI supabaseUrl, String supabaseKey, Map<String, String> headers, String schema,
-                           String authPath, String postgrestPath, String storagePath, String realtimePath) {
+    private SupabaseConfig(URI supabaseUrl, String supabaseKey, Map<String, String> headers, String schema, String authPath, String postgrestPath, String storagePath, String realtimePath) {
         this.supabaseUrl = supabaseUrl;
         this.supabaseKey = supabaseKey;
         this.headers = headers;
@@ -52,114 +65,104 @@ public final class SupabaseConfig {
         this.realtimePath = realtimePath;
     }
 
-    /**
-     * Getter for the Supabase API base URL.
-     * @return Supabase API base URL
-     */
+    /** - Returns the base URL of the Supabase project for API endpoint construction - */
     public URI getSupabaseUrl() {
         return supabaseUrl;
     }
 
-    /**
-     * Getter for the API Key.
-     * @return API Key
-     */
+    /** - Returns the API key used for authentication with Supabase services - */
     public String getSupabaseKey() {
         return supabaseKey;
     }
 
-    /**
-     * Getter for the Headers.
-     * @return An unmodifiable Map of headers
-     */
+    /** - Returns an immutable copy of HTTP headers for request customization - */
     public Map<String, String> getHeaders() {
         return Map.copyOf(headers);
     }
 
-    /**
-     * Getter for the Supabase schema.
-     * @return Supabase schema name
-     */
+    /** - Returns the database schema name for PostgreSQL operations - */
     public String getSchema() {
         return schema;
     }
 
-    // --- New Getters (Added in 0.0.4) ---
-
-    /**
-     * Getter for the Auth service path.
-     * @return Auth service path (e.g., /auth/v1)
-     */
+    /** - Returns the authentication service endpoint path for GoTrue API operations - */
     public String getAuthPath() {
         return authPath;
     }
 
-    /**
-     * Getter for the Postgrest service path.
-     * @return Postgrest service path (e.g., /rest/v1)
-     */
+    /** - Returns the PostgreSQL REST service endpoint path for database operations - */
     public String getPostgrestPath() {
         return postgrestPath;
     }
 
-    /**
-     * Getter for the Storage service path.
-     * @return Storage service path (e.g., /storage/v1)
-     */
+    /** - Returns the storage service endpoint path for file management operations - */
     public String getStoragePath() {
         return storagePath;
     }
 
-    /**
-     * Getter for the Realtime service path.
-     * @return Realtime service path (e.g., /realtime/v1)
-     */
+    /** - Returns the real-time service endpoint path for WebSocket subscriptions - */
     public String getRealtimePath() {
         return realtimePath;
     }
 
-
     /**
-     * Resuelve un path relativo contra la URL base de Supabase.
-     * (ej. "https://id.supabase.co" + "/rest/v1/table" = "https://id.supabase.co/rest/v1/table")
+     * - URL RESOLUTION UTILITY -
+     * <p>
+     * Resolves a relative path against the base Supabase URL to create complete endpoint URLs.
+     * This utility method simplifies URL construction for service-specific API calls across
+     * all SDK modules by providing consistent URL resolution behavior.
      *
-     * @param path El path relativo (debe empezar con '/')
-     * @return La URI completa resuelta.
+     * @param path Relative path string that must start with '/' (e.g., "/rest/v1/table")
+     * @return Complete resolved URI combining base URL with the provided path
      */
     public URI resolveUrl(String path) {
         return this.supabaseUrl.resolve(path);
     }
 
 
-    /* -------------------- BUILDER -------------------- */
-
     /**
-     * Builder to create a SupabaseConfig instance.
+     * - CONFIGURATION BUILDER -
+     * <p>
+     * Builder pattern implementation for creating immutable SupabaseConfig instances
+     * with proper validation and default values. Provides a fluent API for setting
+     * configuration parameters while ensuring required fields are properly initialized
+     * and optional parameters have sensible defaults.
      */
     public static class Builder {
-        /** - Base URL for the Supabase API - **/
+        /** - Base URL for the Supabase project API - */
         private final URI supabaseUrl;
 
-        /** - API Key for communication with the Supabase API - **/
+        /** - API key for authentication with Supabase services - */
         private final String supabaseKey;
 
-        /** - Headers to include in the request - **/
+        /** - Mutable headers map for request customization during builder configuration - */
         private final Map<String, String> headers = new HashMap<>();
 
-        /** - Supabase schema to interact with - **/
-        private String schema = "public"; // Default Supabase schema
+        /** - Database schema name with default value for PostgreSQL operations - */
+        private String schema = "public";
 
-        // --- Service Path Defaults (Added in 0.0.4) ---
+        /** - Authentication service path with default API version - */
         private String authPath = "/auth/v1";
+
+        /** - PostgreSQL REST service path with default API version - */
         private String postgrestPath = "/rest/v1";
+
+        /** - Storage service path with default API version - */
         private String storagePath = "/storage/v1";
+
+        /** - Real-time service path with default API version - */
         private String realtimePath = "/realtime/v1";
 
         /**
-         * Creates a new Builder.
+         * - BUILDER CONSTRUCTOR -
+         * <p>
+         * Initializes a new configuration builder with required Supabase project parameters.
+         * Automatically sets up default headers including the API key for service authentication.
+         * All service paths are initialized with default values that can be overridden using
+         * the fluent builder methods.
          *
-         * @param projectUrl  The URL of your Supabase project (e.g., "https://id.supabase.co")
-         * @param supabaseKey The 'anon' or 'service_role' key for your project.
+         * @param projectUrl  Complete URL of the Supabase project (e.g., "https://id.supabase.co")
+         * @param supabaseKey Anonymous or service role API key for project authentication
          */
         public Builder(String projectUrl, String supabaseKey) {
             Objects.requireNonNull(projectUrl, "Project URL cannot be null");
@@ -173,10 +176,15 @@ public final class SupabaseConfig {
         }
 
         /**
-         * Adds a custom HTTP header (e.g., "Authorization").
-         * @param key   The header name
-         * @param value The header value
-         * @return this (for Builder chaining)
+         * - CUSTOM HEADER ADDITION -
+         * <p>
+         * Adds a custom HTTP header to be included in all API requests. Commonly used
+         * for authorization tokens, custom authentication, or API-specific headers.
+         * Headers added here will override any default headers with the same key.
+         *
+         * @param key   HTTP header name (e.g., "Authorization", "X-Custom-Header")
+         * @param value HTTP header value
+         * @return Builder instance for method chaining
          */
         public Builder addHeader(String key, String value) {
             this.headers.put(key, value);
@@ -184,9 +192,14 @@ public final class SupabaseConfig {
         }
 
         /**
-         * Defines the database schema to use (defaults to "public").
-         * @param schemaName The name of the schema.
-         * @return this (for Builder chaining)
+         * - DATABASE SCHEMA CONFIGURATION -
+         * <p>
+         * Specifies the PostgreSQL schema to use for database operations. Defaults to "public"
+         * which is the standard schema for most Supabase projects. Custom schemas can be
+         * specified for multi-tenant applications or advanced database configurations.
+         *
+         * @param schemaName Database schema name for PostgreSQL operations
+         * @return Builder instance for method chaining
          */
         public Builder withSchema(String schemaName) {
             Objects.requireNonNull(schemaName, "Schema name cannot be null");
@@ -194,12 +207,14 @@ public final class SupabaseConfig {
             return this;
         }
 
-        // --- Optional Path Overrides (Added in 0.0.4) ---
-
         /**
-         * (Optional) Overrides the default Auth service path.
-         * @param authPath The new path (e.g., "/auth/v2")
-         * @return this (for Builder chaining)
+         * - AUTHENTICATION SERVICE PATH OVERRIDE -
+         * <p>
+         * Overrides the default authentication service endpoint path. Useful for custom
+         * Supabase deployments or when using different API versions. Default is "/auth/v1".
+         *
+         * @param authPath Custom authentication service path (e.g., "/auth/v2")
+         * @return Builder instance for method chaining
          */
         public Builder withAuthPath(String authPath) {
             this.authPath = authPath;
@@ -207,9 +222,13 @@ public final class SupabaseConfig {
         }
 
         /**
-         * (Optional) Overrides the default Postgrest service path.
-         * @param postgrestPath The new path (e.g., "/rest/v2")
-         * @return this (for Builder chaining)
+         * - POSTGRESQL REST SERVICE PATH OVERRIDE -
+         * <p>
+         * Overrides the default PostgREST service endpoint path. Allows targeting different
+         * API versions or custom PostgREST deployments. Default is "/rest/v1".
+         *
+         * @param postgrestPath Custom PostgREST service path (e.g., "/rest/v2")
+         * @return Builder instance for method chaining
          */
         public Builder withPostgrestPath(String postgrestPath) {
             this.postgrestPath = postgrestPath;
@@ -217,9 +236,13 @@ public final class SupabaseConfig {
         }
 
         /**
-         * (Optional) Overrides the default Storage service path.
-         * @param storagePath The new path (e.g., "/storage/v2")
-         * @return this (for Builder chaining)
+         * - STORAGE SERVICE PATH OVERRIDE -
+         * <p>
+         * Overrides the default storage service endpoint path. Enables targeting different
+         * storage API versions or custom storage service deployments. Default is "/storage/v1".
+         *
+         * @param storagePath Custom storage service path (e.g., "/storage/v2")
+         * @return Builder instance for method chaining
          */
         public Builder withStoragePath(String storagePath) {
             this.storagePath = storagePath;
@@ -227,9 +250,13 @@ public final class SupabaseConfig {
         }
 
         /**
-         * (Optional) Overrides the default Realtime service path.
-         * @param realtimePath The new path (e.g., "/realtime/v2")
-         * @return this (for Builder chaining)
+         * - REAL-TIME SERVICE PATH OVERRIDE -
+         * <p>
+         * Overrides the default real-time service endpoint path. Allows connecting to
+         * different real-time API versions or custom WebSocket endpoints. Default is "/realtime/v1".
+         *
+         * @param realtimePath Custom real-time service path (e.g., "/realtime/v2")
+         * @return Builder instance for method chaining
          */
         public Builder withRealtimePath(String realtimePath) {
             this.realtimePath = realtimePath;
@@ -237,8 +264,13 @@ public final class SupabaseConfig {
         }
 
         /**
-         * Builds the final SupabaseConfig instance.
-         * @return An immutable SupabaseConfig instance.
+         * - CONFIGURATION BUILD -
+         * <p>
+         * Creates the final immutable SupabaseConfig instance with all configured parameters.
+         * Automatically ensures proper Authorization header setup if not explicitly provided.
+         * All builder parameters are validated and the resulting configuration is thread-safe.
+         *
+         * @return Immutable SupabaseConfig instance ready for client initialization
          */
         public SupabaseConfig build() {
             if (!this.headers.containsKey("Authorization")) {

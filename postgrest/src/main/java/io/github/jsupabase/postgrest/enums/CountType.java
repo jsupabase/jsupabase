@@ -5,7 +5,8 @@ package io.github.jsupabase.postgrest.enums; // <-- Nuevo paquete
  * Used in SELECT, UPDATE, INSERT, DELETE, and RPC.
  *
  * @author neilhdezs
- * @version 0.0.3
+ * @version 0.1.0
+ * @since 0.1.0
  */
 public enum CountType {
     EXACT("exact"),

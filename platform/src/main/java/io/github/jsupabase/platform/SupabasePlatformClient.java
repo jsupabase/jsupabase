@@ -2,11 +2,13 @@ package io.github.jsupabase.platform;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.jsupabase.core.client.HttpClientBase;
-import io.github.jsupabase.core.exception.SupabaseException;
+import io.github.jsupabase.core.exceptions.PlatformException;
 import io.github.jsupabase.core.util.JsonUtil;
 import io.github.jsupabase.platform.dto.organizations.OrganizationResponse;
 import io.github.jsupabase.platform.dto.projects.ProjectResponse;
-
+import io.github.jsupabase.platform.utils.PlatformConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -17,81 +19,120 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Client for the Supabase Platform (Management) API.
- * This client is separate from the project-specific SupabaseClient.
- * It uses a Personal Access Token (PAT) for authentication.
+ * - SUPABASE PLATFORM CLIENT -
+ * <p>
+ * Management API client for Supabase Platform operations including organization management,
+ * project provisioning, function deployment, and infrastructure configuration.
+ * and requires a Personal Access Token (PAT) for authentication.
+ * <p>
+ * The Platform API provides administrative capabilities for managing Supabase projects,
+ * organizations, databases, Edge Functions, secrets, and network configurations programmatically.
+ * This is essential for Infrastructure-as-Code workflows, CI/CD pipelines, and multi-tenant
+ * SaaS applications that dynamically provision Supabase resources.
+ *
+ * <h3>Authentication:</h3>
+ * Uses Personal Access Token (PAT) obtained from the Supabase Dashboard rather than project-level
+ * API keys. The PAT grants access to all organizations and projects associated with your account.
+ *
+ * <h3>Use Cases:</h3>
+ * <ul>
+ * <li>Automated project provisioning for multi-tenant applications</li>
+ * <li>Infrastructure-as-Code deployments with Terraform/Pulumi</li>
+ * <li>CI/CD pipelines for Edge Functions and database migrations</li>
+ * <li>Programmatic backup and disaster recovery management</li>
+ * <li>Organization and team management automation</li>
+ * </ul>
  *
  * @author neilhdezs
- * @version 0.1.2 // Version updated
+ * @version 0.1.0
+ * @since 0.1.0
  */
 public class SupabasePlatformClient {
 
-    /** - The static host for the Supabase Management API - **/
-    private static final String PLATFORM_HOST = "https://api.supabase.com";
-
-    /** - The default API version to use if none is specified - **/
-    private static final String DEFAULT_VERSION = "v1";
+    /** - Logger for Platform API operations - **/
+    private static final Logger LOGGER = LoggerFactory.getLogger(SupabasePlatformClient.class);
 
     /** - The fully resolved base URL (e.g., "https://api.supabase.com/v1") - **/
     private final URI baseUrl;
 
-    /** - The shared HttpClient from the 'core' module - **/
+    /** - The shared HttpClient from the core module - **/
     private final HttpClient httpClient;
 
-    /** - The Personal Access Token (PAT) - **/
+    /** - The Personal Access Token (PAT) for Platform API authentication - **/
     private final String personalAccessToken;
 
     /**
-     * Creates a new client for the Supabase Platform API using the default version (v1).
+     * - PLATFORM CLIENT CONSTRUCTOR (DEFAULT VERSION) -
+     * <p>
+     * Creates a new Platform API client using the default API version (v1).
+     * The client authenticates using a Personal Access Token obtained from
+     * the Supabase Dashboard Settings page.
      *
-     * @param personalAccessToken Your Personal Access Token (from supabase.com/dashboard).
+     * @param personalAccessToken Personal Access Token from supabase.com/dashboard/account/tokens
+     * @throws PlatformException if PAT is null or empty
      */
     public SupabasePlatformClient(String personalAccessToken) {
-        // Llama al constructor principal con la versión por defecto
-        this(personalAccessToken, DEFAULT_VERSION);
+        this(personalAccessToken, PlatformConstants.DEFAULT_VERSION);
     }
 
     /**
-     * Creates a new client for the Supabase Platform API using a specific version.
+     * - PLATFORM CLIENT CONSTRUCTOR (CUSTOM VERSION) -
+     * <p>
+     * Creates a new Platform API client using a specific API version.
+     * Allows targeting different API versions for compatibility or testing purposes.
      *
-     * @param personalAccessToken Your Personal Access Token (from supabase.com/dashboard).
-     * @param apiVersion The API version to use (e.g., "v1", "v2").
+     * @param personalAccessToken Personal Access Token for authentication
+     * @param apiVersion API version to use (e.g., "v1", "v2")
+     * @throws PlatformException if PAT or version is invalid
      */
     public SupabasePlatformClient(String personalAccessToken, String apiVersion) {
         if (personalAccessToken == null || personalAccessToken.isBlank()) {
-            throw new IllegalArgumentException("Personal Access Token cannot be null or empty.");
+            throw new PlatformException(PlatformConstants.ERROR_INVALID_PAT);
         }
         if (apiVersion == null || apiVersion.isBlank()) {
-            throw new IllegalArgumentException("API version cannot be null or empty.");
+            throw new PlatformException(PlatformConstants.ERROR_INVALID_VERSION);
         }
 
         this.httpClient = HttpClientBase.getSharedHttpClient();
         this.personalAccessToken = personalAccessToken;
 
-        // Construye la URL base usando la versión inyectada
-        String platformPath = "/" + apiVersion.replaceAll("^/|/$", ""); // Limpia las barras
-        this.baseUrl = URI.create(PLATFORM_HOST + platformPath);
+        String platformPath = "/" + apiVersion.replaceAll("^/|/$", "");
+        this.baseUrl = URI.create(PlatformConstants.PLATFORM_HOST + platformPath);
+
+        LOGGER.debug("Platform client initialized with version: {}", apiVersion);
     }
 
     /**
-     * Lists all organizations your account has access to.
-     * Corresponds to: GET /v1/organizations
+     * - LIST ORGANIZATIONS -
+     * <p>
+     * Retrieves all organizations your account has access to. Organizations are the
+     * top-level grouping entity in Supabase that contain projects, team members, and
+     * billing information.
+     * <p>
+     * REST endpoint: {@code GET /v1/organizations}
      *
-     * @return A CompletableFuture with a list of organizations.
+     * @return CompletableFuture with list of organizations accessible by this PAT
      */
     public CompletableFuture<List<OrganizationResponse>> listOrganizations() {
-        HttpRequest request = newRequest("/organizations").GET().build();
+        LOGGER.debug(PlatformConstants.LOG_LIST_ORGANIZATIONS);
+        HttpRequest request = newRequest(PlatformConstants.ENDPOINT_ORGANIZATIONS).GET().build();
         return sendAsync(request, new TypeReference<>() {});
     }
 
     /**
-     * Lists all projects associated with your account.
-     * Corresponds to: GET /v1/projects
+     * - LIST PROJECTS -
+     * <p>
+     * Retrieves all projects associated with your account across all organizations.
+     * Each project represents a Supabase instance with its own database, authentication,
+     * storage, and Edge Functions.
+     * <p>
+     * REST endpoint: {@code GET /v1/projects}
      *
-     * @return A CompletableFuture with a list of projects.
+     * @return CompletableFuture with list of all accessible projects
      */
     public CompletableFuture<List<ProjectResponse>> listProjects() {
-        HttpRequest request = newRequest("/projects").GET().build();
+        LOGGER.debug(PlatformConstants.LOG_LIST_PROJECTS);
+        HttpRequest request = newRequest(PlatformConstants.ENDPOINT_PROJECTS).GET().build();
         return sendAsync(request, new TypeReference<>() {});
     }
 
@@ -100,29 +141,43 @@ public class SupabasePlatformClient {
     // --- Private Helpers ---
 
     /**
-     * Creates a new HttpRequest.Builder pre-configured with
-     * the Platform API base URL and the Personal Access Token.
+     * - HTTP REQUEST BUILDER -
+     * <p>
+     * Creates a pre-configured HTTP request builder with the Platform API base URL
+     * and authentication headers. All requests use Bearer token authentication with
+     * the Personal Access Token and JSON content type.
      *
-     * @param path El path del endpoint (ej. "/projects")
+     * @param path Endpoint path (e.g., "/projects", "/organizations")
+     * @return HttpRequest.Builder configured for Platform API
      */
     private HttpRequest.Builder newRequest(String path) {
-        // Resuelve el path del endpoint contra la URL base (ahora dinámica)
         URI uri = this.baseUrl.resolve(path);
 
         return HttpRequest.newBuilder()
                 .uri(uri)
-                .header("Authorization", "Bearer " + this.personalAccessToken)
-                .header("Content-Type", "application/json");
+                .header(PlatformConstants.HDR_AUTHORIZATION, PlatformConstants.AUTH_BEARER + this.personalAccessToken)
+                .header(PlatformConstants.HDR_CONTENT_TYPE, PlatformConstants.MIME_JSON);
     }
 
     /**
-     * Sends an async request and deserializes the JSON response.
+     * - ASYNC REQUEST EXECUTOR -
+     * <p>
+     * Sends an asynchronous HTTP request and deserializes the JSON response into
+     * the specified type. Handles HTTP error status codes by throwing PlatformException
+     * with the error response body and status code.
+     *
+     * @param request HTTP request to execute
+     * @param typeRef Jackson TypeReference for deserializing response
+     * @param <T> Response type
+     * @return CompletableFuture with deserialized response or null for empty bodies
+     * @throws PlatformException if HTTP status code >= 400
      */
     private <T> CompletableFuture<T> sendAsync(HttpRequest request, TypeReference<T> typeRef) {
         return this.httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
                 .thenApply(httpResponse -> {
                     if (httpResponse.statusCode() >= 400) {
-                        throw new SupabaseException(httpResponse.body(), httpResponse.statusCode());
+                        LOGGER.error(PlatformConstants.ERROR_REQUEST_FAILED, httpResponse.body());
+                        throw new PlatformException(httpResponse.body(), httpResponse.statusCode());
                     }
                     String body = httpResponse.body();
                     if (body == null || body.isEmpty()) {

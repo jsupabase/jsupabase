@@ -11,14 +11,15 @@ import io.github.jsupabase.postgrest.builder.PostgrestRpcBuilder;
  * and accessed via `postgrest.rpc()`.
  *
  * @author neilhdezs
- * @version 1.0.0 (Refactored to Gateway pattern)
+ * @version 0.1.0
+ * @since 0.1.0 (Refactored to Gateway pattern)
  */
 public class PostgrestRpcClient extends HttpClientBase {
 
     /**
      * Package-private constructor, called by PostgrestClient (Gateway).
      *
-     * @param config      The Supabase configuration.
+     * @param config The Supabase configuration.
      */
     public PostgrestRpcClient(SupabaseConfig config) {
         super(config);

@@ -11,6 +11,7 @@ import java.util.Map;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 
 public class OtpOptions {
@@ -44,6 +45,38 @@ public class OtpOptions {
         this.data = builder.data;
         this.captchaToken = builder.captchaToken;
         this.channel = builder.channel;
+    }
+
+    /**
+     * Crea un constructor de OtpOptions.
+     *
+     * @return un nuevo Builder.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // --- Métodos de Fábrica (Helpers) ---
+
+    // Getters (para serialización)
+    public String getEmailRedirectTo() {
+        return emailRedirectTo;
+    }
+
+    public Boolean getShouldCreateUser() {
+        return shouldCreateUser;
+    }
+
+    public Map<String, Object> getData() {
+        return data;
+    }
+
+    public String getCaptchaToken() {
+        return captchaToken;
+    }
+
+    public String getChannel() {
+        return channel;
     }
 
     public static class Builder {
@@ -82,21 +115,4 @@ public class OtpOptions {
             return new OtpOptions(this);
         }
     }
-
-    // --- Métodos de Fábrica (Helpers) ---
-    /**
-     * Crea un constructor de OtpOptions.
-     * @return un nuevo Builder.
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-
-    // Getters (para serialización)
-    public String getEmailRedirectTo() { return emailRedirectTo; }
-    public Boolean getShouldCreateUser() { return shouldCreateUser; }
-    public Map<String, Object> getData() { return data; }
-    public String getCaptchaToken() { return captchaToken; }
-    public String getChannel() { return channel; }
 }

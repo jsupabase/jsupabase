@@ -1,6 +1,7 @@
 package io.github.jsupabase.platform.dto.secrets.options;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 /**
@@ -8,8 +9,16 @@ import java.util.List;
  *
  * @author neilhdezs
  * @version 0.1.0
+ * @since 0.1.0
  */
 public class BulkCreateSecretsRequest {
+
+    @JsonProperty("secrets")
+    private final List<Secret> secrets;
+
+    public BulkCreateSecretsRequest(List<Secret> secrets) {
+        this.secrets = secrets;
+    }
 
     /** Inner class representing a single secret entry **/
     public static class Secret {
@@ -22,12 +31,5 @@ public class BulkCreateSecretsRequest {
             this.name = name;
             this.value = value;
         }
-    }
-
-    @JsonProperty("secrets")
-    private final List<Secret> secrets;
-
-    public BulkCreateSecretsRequest(List<Secret> secrets) {
-        this.secrets = secrets;
     }
 }
