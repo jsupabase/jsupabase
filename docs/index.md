@@ -4,6 +4,8 @@ title: "jsupabase: De Concepto a Producción en 72 Horas"
 description: "Un caso de estudio sobre arquitectura moderna, patrones de diseño y el futuro del desarrollo de software con IA"
 ---
 
+<div class="container-lg">
+
 # 🚀 jsupabase: De Concepto a Producción en 72 Horas
 
 ## El Reto que Me Propuse
@@ -17,11 +19,15 @@ Este no es otro proyecto más. Es la demostración de que **la arquitectura sól
 
 ## 💡 La Reflexión que Cambia Todo: El Futuro del Desarrollo
 
+<div class="highlight-section">
+
 **¿Cuál es el verdadero cuello de botella en 2024?**
 
 Ya no es escribir código más rápido. La IA hace eso mejor que nosotros. 
 
 **El cuello de botella real es la VISIÓN ARQUITECTÓNICA.**
+
+</div>
 
 ### Mi revelación trabajando en este proyecto:
 
@@ -35,6 +41,8 @@ Nuestro valor como desarrolladores está evolucionando hacia:
 **La IA nos libera del "picar teclas" para que nos enfoquemos en lo que realmente importa: PENSAR.**
 
 El futuro no es ser reemplazados por la IA; es guiarla. La habilidad crítica es formular el problema correcto y orquestar la solución con criterio arquitectónico.
+
+</div>
 
 ---
 
@@ -205,12 +213,18 @@ La velocidad de "tipear código" ya no es nuestro diferenciador. La IA puede gen
 
 ---
 
-## 🏷️ Tags
-
-#Java #Supabase #SDK #OpenSource #SoftwareArchitecture #Developer #AI #DesignPatterns #ModernDevelopment #CompletableFuture #WebSocket #HttpClient #Gateway #Facade #Builder #Observer #PostgREST #Realtime #Authentication #Storage #API #Async #Performance
-
 ---
 
-**¿Qué opinas de esta reflexión? ¿Crees que la arquitectura se está volviendo más importante que nunca?**
+## 🗣️ Iniciemos el Debate
 
-**Comparte tu experiencia y debatamos el futuro del desarrollo de software en los comentarios.**
+> **¿Qué opinas de esta reflexión? ¿Crees que la arquitectura se está volviendo más importante que nunca?**
+> 
+> **Comparte tu experiencia y debatamos el futuro del desarrollo de software en los comentarios.**
+
+<div class="tags">
+
+**#Java #Supabase #SDK #OpenSource #SoftwareArchitecture #Developer #AI #DesignPatterns #ModernDevelopment #CompletableFuture #WebSocket #HttpClient #Gateway #Facade #Builder #Observer #PostgREST #Realtime #Authentication #Storage #API #Async #Performance**
+
+</div>
+
+</div>

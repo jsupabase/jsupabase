@@ -11,12 +11,21 @@ plugins:
   - jekyll-default-layout
   - jekyll-titles-from-headings
 
-# Configuración de Markdown
+# Configuración de Markdown con syntax highlighting
 markdown: kramdown
 highlighter: rouge
 kramdown:
   input: GFM
   hard_wrap: false
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+# Configuración SASS/SCSS
+sass:
+  style: compressed
+  sass_dir: _sass
 
 # Excluir archivos del build
 exclude:
@@ -27,4 +36,6 @@ exclude:
   - gradlew.bat
   - settings.gradle
   - "*.gradle"
+  - node_modules/
+  - vendor/
 

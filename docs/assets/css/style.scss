@@ -1,0 +1,396 @@
+---
+---
+
+/* Tema oscuro estilo IntelliJ IDEA */
+:root {
+  --bg-primary: #2b2b2b;
+  --bg-secondary: #3c3f41;
+  --bg-code: #1e1e1e;
+  --text-primary: #bababa;
+  --text-secondary: #a9b7c6;
+  --text-accent: #cc7832;
+  --text-keyword: #cc7832;
+  --text-string: #6a8759;
+  --text-comment: #808080;
+  --border-color: #555;
+  --link-color: #589df6;
+  --link-hover: #8cc8ff;
+  --highlight-bg: #323232;
+  --success-color: #629755;
+  --warning-color: #ffc66d;
+}
+
+/* Reset y base */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  line-height: 1.6;
+  margin: 0;
+  padding: 20px;
+}
+
+/* Container principal */
+.container-lg {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: var(--bg-primary);
+  padding: 40px;
+  border-radius: 8px;
+}
+
+/* Títulos */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-accent) !important;
+  font-weight: 600;
+  margin-top: 2em;
+  margin-bottom: 0.8em;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.3em;
+}
+
+h1 {
+  font-size: 2.5em;
+  color: var(--warning-color) !important;
+  text-align: center;
+  margin-bottom: 1em;
+  border-bottom: 2px solid var(--text-accent);
+}
+
+h2 {
+  font-size: 1.8em;
+  margin-top: 3em;
+}
+
+h3 {
+  font-size: 1.4em;
+  color: var(--link-color) !important;
+}
+
+/* Párrafos y texto */
+p {
+  margin-bottom: 1.2em;
+  color: var(--text-secondary);
+}
+
+/* Enlaces */
+a {
+  color: var(--link-color) !important;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--link-color);
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: var(--link-hover) !important;
+  border-bottom: 1px solid var(--link-hover);
+}
+
+/* Listas */
+ul, ol {
+  margin-bottom: 1.5em;
+}
+
+li {
+  margin-bottom: 0.5em;
+  color: var(--text-secondary);
+}
+
+/* Énfasis y strong */
+strong, b {
+  color: var(--text-accent) !important;
+  font-weight: 600;
+}
+
+em, i {
+  color: var(--warning-color);
+  font-style: italic;
+}
+
+/* Bloques de código */
+pre, code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace !important;
+}
+
+code {
+  background-color: var(--bg-code) !important;
+  color: var(--text-string) !important;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  border: 1px solid var(--border-color);
+}
+
+pre {
+  background-color: var(--bg-code) !important;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  overflow-x: auto;
+  margin: 1.5em 0;
+  position: relative;
+}
+
+pre code {
+  background: none !important;
+  border: none;
+  padding: 0;
+  color: var(--text-secondary) !important;
+}
+
+/* Syntax highlighting estilo IntelliJ */
+.highlight .c { color: var(--text-comment); font-style: italic; } /* Comment */
+.highlight .k { color: var(--text-keyword); font-weight: bold; } /* Keyword */
+.highlight .s { color: var(--text-string); } /* String */
+.highlight .n { color: var(--text-secondary); } /* Name */
+.highlight .o { color: var(--text-accent); } /* Operator */
+.highlight .p { color: var(--text-primary); } /* Punctuation */
+
+/* Blockquotes - para tus reflexiones importantes */
+blockquote {
+  border-left: 4px solid var(--text-accent);
+  background-color: var(--bg-secondary);
+  margin: 1.5em 0;
+  padding: 1em 1.5em;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: var(--text-primary) !important;
+  position: relative;
+}
+
+blockquote::before {
+  content: '"';
+  font-size: 4em;
+  color: var(--text-accent);
+  position: absolute;
+  left: 10px;
+  top: -10px;
+  opacity: 0.3;
+}
+
+blockquote p {
+  margin: 0;
+  color: var(--text-primary) !important;
+}
+
+/* Separadores */
+hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+  margin: 3em 0;
+}
+
+/* Emojis y elementos especiales */
+.emoji {
+  font-size: 1.2em;
+  margin-right: 0.3em;
+}
+
+/* Contenedores de secciones importantes */
+.highlight-section {
+  background-color: var(--bg-secondary);
+  border-left: 4px solid var(--success-color);
+  padding: 1.5em;
+  margin: 2em 0;
+  border-radius: 0 8px 8px 0;
+}
+
+/* Tags/hashtags */
+.tags {
+  margin: 2em 0;
+  padding: 1em;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+/* Estilo para elementos con checkmarks */
+li:contains("✅") {
+  color: var(--success-color) !important;
+}
+
+/* Tabla de contenido mejorada */
+.table-of-contents {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5em;
+  margin: 2em 0;
+}
+
+.table-of-contents ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-of-contents li {
+  padding: 0.3em 0;
+  border-bottom: 1px dotted var(--border-color);
+}
+
+/* Animaciones sutiles */
+.container-lg {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .container-lg {
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 2em;
+  }
+
+  h2 {
+    font-size: 1.5em;
+  }
+}
+
+/* Scroll personalizado */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-accent);
+}
+
+/* Selección de texto */
+::selection {
+  background-color: var(--text-accent);
+  color: var(--bg-primary);
+}
+
+/* Header del proyecto */
+.page-header {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+  padding: 3em 2em;
+  text-align: center;
+  border-bottom: 3px solid var(--text-accent);
+  margin-bottom: 2em;
+}
+
+.project-name {
+  font-size: 2.5em;
+  font-weight: 700;
+  color: var(--warning-color);
+  margin-bottom: 0.5em;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.project-tagline {
+  font-size: 1.2em;
+  color: var(--text-secondary);
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Contenido principal */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2em;
+  min-height: calc(100vh - 300px);
+}
+
+/* Footer */
+.site-footer {
+  background-color: var(--bg-secondary);
+  border-top: 2px solid var(--border-color);
+  margin-top: 4em;
+  padding: 2em 0;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2em;
+}
+
+.footer-content p {
+  margin: 0.5em 0;
+  color: var(--text-comment);
+  font-size: 0.9em;
+}
+
+.footer-content a {
+  color: var(--link-color) !important;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--link-color);
+  transition: all 0.3s ease;
+}
+
+.footer-content a:hover {
+  color: var(--link-hover) !important;
+  border-bottom: 1px solid var(--link-hover);
+}
+
+/* Badges y elementos especiales */
+.badge {
+  display: inline-block;
+  padding: 0.3em 0.8em;
+  background-color: var(--text-accent);
+  color: var(--bg-primary);
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: 600;
+  margin: 0.2em;
+}
+
+.badge.success {
+  background-color: var(--success-color);
+}
+
+.badge.warning {
+  background-color: var(--warning-color);
+}
+
+/* Mejoras para móvil */
+@media (max-width: 768px) {
+  .page-header {
+    padding: 2em 1em;
+  }
+
+  .project-name {
+    font-size: 1.8em;
+  }
+
+  .project-tagline {
+    font-size: 1em;
+  }
+
+  .main-content {
+    padding: 0 1em;
+  }
+
+  .footer-content {
+    padding: 0 1em;
+  }
+}
+
