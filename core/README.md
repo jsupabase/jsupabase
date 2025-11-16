@@ -5,7 +5,7 @@
 Core layer powering all modules in the jsupabase SDK: HTTP/WS foundations, shared configuration, JSON utilities, and base exceptions.
 
 ## Table of Contents
-
+ 
 - [Overview](#overview)
 - [Installation](#installation)
 - [Architecture](#architecture)
