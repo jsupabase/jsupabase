@@ -1,0 +1,10 @@
+rootProject.name = 'jsupabase'
+
+include 'core'
+include 'auth'
+include 'postgrest'
+include 'realtime'
+include 'storage'
+include 'client'
+include 'prueba'
+include 'platform'

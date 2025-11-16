@@ -1,0 +1,11 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // Depende de 'core' para JsonUtil y HttpClientBase
+    api project(':core')
+
+    // Dependencia de Jackson
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+}
